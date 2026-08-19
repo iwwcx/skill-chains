@@ -8,6 +8,13 @@
 export default {
 	data() {
 		return {}
+	},
+	onShow() {
+		// 未登录则跳转登录页
+		const token = uni.getStorageSync('token')
+		if (!token) {
+			uni.redirectTo({ url: '/pages/common/login/index' })
+		}
 	}
 }
 </script>
