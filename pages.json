@@ -1,0 +1,82 @@
+{
+	"pages": [
+		{
+			"path": "pages/clue/index",
+			"style": {
+				"navigationBarTitleText": "线索"
+			}
+		},
+		{
+			"path": "pages/manage/index",
+			"style": {
+				"navigationBarTitleText": "管理"
+			}
+		},
+		{
+			"path": "pages/message/index",
+			"style": {
+				"navigationBarTitleText": "迅连"
+			}
+		},
+		{
+			"path": "pages/qrcode/index",
+			"style": {
+				"navigationBarTitleText": "工品码"
+			}
+		},
+		{
+			"path": "pages/mine/index",
+			"style": {
+				"navigationBarTitleText": "我的"
+			}
+		}
+	],
+	"globalStyle": {
+		"navigationBarTextStyle": "black",
+		"navigationBarTitleText": "skill-chains",
+		"navigationBarBackgroundColor": "#F8F8F8",
+		"backgroundColor": "#F8F8F8"
+	},
+	"tabBar": {
+		"color": "#999999",
+		"selectedColor": "#4facfe",
+		"backgroundColor": "#ffffff",
+		"borderStyle": "black",
+		"list": [
+			{
+				"pagePath": "pages/clue/index",
+				"text": "线索",
+				"iconPath": "static/images/tabbar/1.png",
+				"selectedIconPath": "static/images/tabbar/2.png"
+			},
+			{
+				"pagePath": "pages/manage/index",
+				"text": "管理",
+				"iconPath": "static/images/tabbar/3.png",
+				"selectedIconPath": "static/images/tabbar/4.png"
+			},
+			{
+				"pagePath": "pages/message/index",
+				"text": "迅连",
+				"iconPath": "static/images/tabbar/7.png",
+				"selectedIconPath": "static/images/tabbar/8.png"
+			},
+			{
+				"pagePath": "pages/qrcode/index",
+				"text": "工品码",
+				"iconPath": "static/images/tabbar/9.png",
+				"selectedIconPath": "static/images/tabbar/10.png"
+			},
+			{
+				"pagePath": "pages/mine/index",
+				"text": "我的",
+				"iconPath": "static/images/tabbar/5.png",
+				"selectedIconPath": "static/images/tabbar/6.png"
+			}
+		]
+	},
+	"uniIdRouter": {
+		"loginPage": "",
+		"needLogin": []
+	}
+}
