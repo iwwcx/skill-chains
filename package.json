@@ -1,0 +1,9 @@
+{
+  "name": "skill-chains",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "dependencies": {
+    "nim-web-sdk-ng": "10.9.70"
+  }
+}

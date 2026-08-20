@@ -74,6 +74,7 @@
 
 <script>
 import { accountLogin, getUserInfo } from '@/static/api/index.js'
+import { normalizeUser } from '@/im-message/services/util.js'
 
 export default {
   data() {
@@ -151,8 +152,8 @@ export default {
     // ----------- 登录成功后拉取用户详情并跳转
     fetchUserInfo() {
       getUserInfo().then((res) => {
-        // 保存用户信息到本地，跳回"我的"页
-        uni.setStorageSync('userInfo', res.data)
+        // 归一化后存 storage（补大写字段别名，IM 模块需要 UserID）
+        uni.setStorageSync('userInfo', normalizeUser(res.data || {}))
         uni.showToast({ title: '登录成功', icon: 'success' })
         setTimeout(() => {
           uni.switchTab({ url: '/pages/mine/index' })
