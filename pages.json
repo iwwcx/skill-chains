@@ -9,7 +9,9 @@
 		{
 			"path": "pages/clue/index",
 			"style": {
-				"navigationBarTitleText": "线索"
+				"navigationBarTitleText": "线索",
+				"navigationBarBackgroundColor": "#FFFFFF",
+				"backgroundColor": "#F7F8FA"
 			}
 		},
 		{
@@ -113,6 +115,19 @@
 					"path": "index",
 					"style": {
 						"navigationBarTitleText": "预览"
+					}
+				}
+			]
+		},
+		{
+			"root": "pages-sub/clue",
+			"pages": [
+				{
+					"path": "clue-detail",
+					"style": {
+						"navigationBarTitleText": "客户主页",
+						"navigationBarBackgroundColor": "#FFFFFF",
+						"backgroundColor": "#F5F6F8"
 					}
 				}
 			]

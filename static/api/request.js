@@ -159,20 +159,24 @@ const createRequest = (apiKey = 'api60') => {
           if(res.State === 1 || res.State === 0) {
             // 特殊返回格式，需额外处理
             if(res.State === 0) {
-              $uni.showToast({
-                title: res.Message,
-                icon: 'none',
-                duration: 2000
-              });
+              if (!skipErrorToast) {
+                $uni.showToast({
+                  title: res.Message,
+                  icon: 'none',
+                  duration: 2000
+                });
+              }
               reject(res.massage);
               return
             }
           } else if(res.code !== 0) {
-            $uni.showToast({
-              title: res.massage,
-              icon: 'none',
-              duration: 2000
-            });
+            if (!skipErrorToast) {
+              $uni.showToast({
+                title: res.massage,
+                icon: 'none',
+                duration: 2000
+              });
+            }
             reject(res.massage);
             return
           }

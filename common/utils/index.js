@@ -3,23 +3,63 @@ export const showName = (obj) => {
   return obj.expertName || obj.ExpertName || obj.userName || obj.UserName || obj.nickName || obj.NickName || '大工程师'
 }
 
-// 格式化头像地址
-export const getProductImageUrl = (val) => {
-  if(val.includes('prod') || 
-    val.includes('series') || 
-    val.includes('logo') || 
-    val.includes('mx') || 
-    val.includes('yb') || 
-    val.includes('sw') || 
-    val.includes('wx') || 
-    val.includes('images')
-  ) {
-    // return "https://img2cdn.global-dsc.cn/" + val + "_165x165.jpg";
-    return "https://img2cdn.global-dsc.cn/" + val + ".jpg";
-  } else {
-    // return "https://prodimg.global-dsc.cn/" + val + "?x-0ss-process=image/resize,_165";
-    return "https://prodimg.global-dsc.cn/" + val + '.jpg';
+// 默认头像（与 sale-customer-map 保持一致）
+const default_avatar_male = 'https://img2cdn.global-dsc.cn/dgzz_img/8520f53eeff21f5a388f30b67e54e287.png' // 男默认头像
+const default_avatar_female = 'https://img2cdn.global-dsc.cn/dgzz_img/6842d00b7f7db24082ed4f59f2bba02a.png' // 女默认头像
+
+// ----------- 获取用户头像地址（参考 sale-customer-map）
+// logo：用户头像字段值（userLogo / UserLogo）
+// sex：性别字段值（userSex / UserSex），2 为女生，否则男生
+export const getAvatarUrl = (logo, sex) => {
+  // 有真实头像：http 开头直接用，否则按 sale 的 getProductImageUrlChat 逻辑拼接
+  if (logo) {
+    if (/http/.test(logo)) return logo
+    // api60hwobsimg 走 img2cdn 不加后缀，其他走 api60 加 .jpg
+    if (logo.includes('api60hwobsimg')) {
+      return 'https://img2cdn.global-dsc.cn/' + logo
+    }
+    return 'https://api60.global-dsc.cn/' + logo + '.jpg'
   }
+  // 无头像：按性别回退默认头像（userSex/UserSex == 2 为女生，否则男生）
+  return Number(sex) === 2 ? default_avatar_female : default_avatar_male
+}
+
+// ----------- 团队列表字段对齐（PascalCase 转 camelCase，与 skill-chain 的 UtilLibs.handleDataKey 保持一致）
+export const handleDataKey = (data) => {
+  if (!data || data.length < 1) return data
+  const changeKeys = { // 字段映射表
+    UserID: 'userId',
+    UserName: 'userName',
+    Mdt: 'userMdt',
+    EMail: 'email',
+    IsCreated: 'isAdmin',
+    IsManager: 'isManager',
+    OrgID: 'orgId',
+    OrgName: 'orgName',
+    Phone: 'phone',
+    UserLogo: 'userLogo',
+    VipLevel: 'userVipLevel',
+    UserSex: 'sex',
+    WorkState: 'state'
+  }
+  const newData = JSON.parse(JSON.stringify(data)) // 深拷贝，避免改到原数据
+  newData.forEach(ele => {
+    Object.keys(changeKeys).forEach(key => {
+      ele[changeKeys[key]] = ele[key]
+    })
+  })
+  return newData
+}
+
+// 格式化产品图地址（与 skill-chain 的 filterProdImage 保持一致）
+// prod/series 开头走 img2cdn 缩略图，其他走 prodimg OSS 缩放
+export const getProductImageUrl = (val, size = 100) => {
+  if (!val) return ''
+  if (/http/.test(val)) return val
+  const isOssImage = !(val.startsWith('prod') || val.startsWith('series'))
+  return isOssImage
+    ? `https://prodimg.global-dsc.cn/${val}?x-oss-process=image/resize,w_${size},h_${size}`
+    : `https://img2cdn.global-dsc.cn/${val}_${size}x${size}.jpg`
 }
 
 // 聊天头像格式化
