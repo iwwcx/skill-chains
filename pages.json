@@ -10,14 +10,18 @@
 			"path": "pages/clue/index",
 			"style": {
 				"navigationBarTitleText": "线索",
-				"navigationBarBackgroundColor": "#FFFFFF",
-				"backgroundColor": "#F7F8FA"
+				"navigationBarBackgroundColor": "#E0ECFD",
+				"navigationBarTextStyle": "black",
+				"backgroundColor": "#F4F6FA"
 			}
 		},
 		{
 			"path": "pages/manage/index",
 			"style": {
-				"navigationBarTitleText": "管理"
+				"navigationBarTitleText": "管理",
+				"navigationBarBackgroundColor": "#E0ECFD",
+				"navigationBarTextStyle": "black",
+				"backgroundColor": "#F4F6FA"
 			}
 		},
 		{
@@ -39,7 +43,9 @@
 		{
 			"path": "pages/mine/index",
 			"style": {
-				"navigationBarTitleText": "我的"
+				"navigationBarTitleText": "我的",
+				"navigationBarBackgroundColor": "#F4F6FA",
+				"backgroundColor": "#F4F6FA"
 			}
 		},
 		{
@@ -126,8 +132,9 @@
 					"path": "clue-detail",
 					"style": {
 						"navigationBarTitleText": "客户主页",
-						"navigationBarBackgroundColor": "#FFFFFF",
-						"backgroundColor": "#F5F6F8"
+						"navigationBarBackgroundColor": "#E0ECFD",
+						"navigationBarTextStyle": "black",
+						"backgroundColor": "#F4F6FA"
 					}
 				}
 			]

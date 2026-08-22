@@ -1,156 +1,160 @@
 <template>
 	<view class="clue-page">
-		<!-- 顶部：浅蓝氛围底 + 图标统计卡 -->
+		<!-- 顶部：editorial 账本式排版，巨号数字做主视觉 -->
 		<view class="clue-header">
-			<!-- 统计：图标小块 + 数字标签横排 -->
-			<view class="header-stats">
-				<view class="hs-item">
-					<view class="hs-text">
-						<text class="hs-num num-browse">{{ formatNumber(displayTotal.browseNum) }}</text>
-						<text class="hs-label">浏览客户</text>
-					</view>
+			<text class="header-eyebrow">CLUE OVERVIEW</text>
+			<!-- 主指标：下载客户是最强意向行为，给最大字号 -->
+			<view class="header-hero">
+				<text class="hero-num">{{ formatNumber(displayTotal.downloadNum) }}</text>
+				<text class="hero-label">下载客户</text>
+			</view>
+			<!-- 次级指标横排，发丝竖线分隔 -->
+			<view class="header-subs">
+				<view class="sub-item">
+					<text class="sub-num">{{ formatNumber(displayTotal.browseNum) }}</text>
+					<text class="sub-label">浏览客户</text>
 				</view>
-				<view class="hs-item">
-					<view class="hs-text">
-						<text class="hs-num num-download">{{ formatNumber(displayTotal.downloadNum) }}</text>
-						<text class="hs-label">下载客户</text>
-					</view>
-				</view>
-				<view class="hs-item">
-					<view class="hs-text">
-						<text class="hs-num num-robbed">{{ formatNumber(displayTotal.robbedNum) }}</text>
-						<text class="hs-label">已抢客户</text>
-					</view>
+				<view class="sub-line"></view>
+				<view class="sub-item">
+					<text class="sub-num">{{ formatNumber(displayTotal.robbedNum) }}</text>
+					<text class="sub-label">已抢客户</text>
 				</view>
 			</view>
 		</view>
 
-		<!-- 筛选：白色胶囊，选中为淡蓝底 -->
-		<view class="clue-filter">
-			<view class="filter-chip" :class="{ active: activeDrop === 'type' }" @tap="toggleDrop('type')">
-				<text class="chip-text">{{ typeText }}</text>
-				<text class="chip-arrow" :class="{ up: activeDrop === 'type' }">▾</text>
-			</view>
-			<view class="filter-chip" :class="{ active: activeDrop === 'keyword', 'is-on': params.keyword !== 0 }" @tap="toggleDrop('keyword')">
-				<text class="chip-text">{{ keywordText }}</text>
-				<text class="chip-arrow" :class="{ up: activeDrop === 'keyword' }">▾</text>
-			</view>
-			<view class="filter-chip" :class="{ active: activeDrop === 'order' }" @tap="toggleDrop('order')">
-				<text class="chip-text">{{ orderText }}</text>
-				<text class="chip-arrow" :class="{ up: activeDrop === 'order' }">▾</text>
-			</view>
-			<!-- 下拉面板：贴着筛选条下方展开 -->
-			<view v-if="activeDrop" class="drop-panel">
-				<view
-					class="drop-option"
-					:class="{ on: params[activeDrop] === opt.value }"
-					v-for="opt in currentDropOptions"
-					:key="activeDrop + '-' + opt.value"
-					@tap="onDropPick(opt.value)"
-				>
-					<view class="drop-option-main">
-						<text class="drop-option-label">{{ opt.label }}</text>
-						<text v-if="opt.desc" class="drop-option-desc">{{ opt.desc }}</text>
-					</view>
-					<text v-if="params[activeDrop] === opt.value" class="drop-option-check">✓</text>
+		<!-- 白色大圆角 sheet：筛选 + 列表都装在这里面 -->
+		<view class="clue-sheet">
+			<!-- 筛选：纯文字式 chip，选中底部蓝色短线 -->
+			<view class="clue-filter">
+				<view class="filter-chip" :class="{ active: activeDrop === 'type' }" @tap="toggleDrop('type')">
+					<text class="chip-text">{{ typeText }}</text>
+					<text class="chip-arrow" :class="{ up: activeDrop === 'type' }">▾</text>
+					<view class="chip-bar" v-if="activeDrop === 'type'"></view>
 				</view>
-			</view>
-		</view>
-
-		<!-- 下拉遮罩：点击空白处关闭，层级在筛选条之下 -->
-		<view v-if="activeDrop" class="drop-mask" @tap="activeDrop = ''"></view>
-
-
-		<!-- 线索时间轴 Feed -->
-		<scroll-view
-			class="clue-scroll"
-			scroll-y
-			:refresher-enabled="true"
-			:refresher-triggered="refreshing"
-			@refresherrefresh="onRefresh"
-			@scrolltolower="onLoadMore"
-			:lower-threshold="100"
-		>
-			<view v-if="list.length" class="feed">
-				<view class="feed-group" v-for="group in groupedList" :key="group.label">
-					<!-- 时间分组标题：今天 / 昨天 / 本周 / 更早 -->
-					<view class="group-head" v-if="group.label">
-						<text class="group-label">{{ group.label }}</text>
-						<text class="group-count">{{ group.items.length }} 位客户</text>
-					</view>
-
+				<view class="filter-chip" :class="{ active: activeDrop === 'keyword', 'is-on': params.keyword !== 0 }" @tap="toggleDrop('keyword')">
+					<text class="chip-text">{{ keywordText }}</text>
+					<text class="chip-arrow" :class="{ up: activeDrop === 'keyword' }">▾</text>
+					<view class="chip-bar" v-if="activeDrop === 'keyword' || params.keyword !== 0"></view>
+				</view>
+				<view class="filter-chip" :class="{ active: activeDrop === 'order' }" @tap="toggleDrop('order')">
+					<text class="chip-text">{{ orderText }}</text>
+					<text class="chip-arrow" :class="{ up: activeDrop === 'order' }">▾</text>
+					<view class="chip-bar" v-if="activeDrop === 'order'"></view>
+				</view>
+				<!-- 下拉面板：贴着筛选条下方展开 -->
+				<view v-if="activeDrop" class="drop-panel">
 					<view
-						class="feed-item"
-						v-for="item in group.items"
-						:key="item.id"
+						class="drop-option"
+						:class="{ on: params[activeDrop] === opt.value }"
+						v-for="opt in currentDropOptions"
+						:key="activeDrop + '-' + opt.value"
+						@tap="onDropPick(opt.value)"
 					>
+						<view class="drop-option-main">
+							<text class="drop-option-label">{{ opt.label }}</text>
+							<text v-if="opt.desc" class="drop-option-desc">{{ opt.desc }}</text>
+						</view>
+						<text v-if="params[activeDrop] === opt.value" class="drop-option-check">✓</text>
+					</view>
+				</view>
+			</view>
+
+			<!-- 下拉遮罩：点击空白处关闭 -->
+			<view v-if="activeDrop" class="drop-mask" @tap="activeDrop = ''"></view>
+
+			<!-- 线索时间轴 Feed -->
+			<scroll-view
+				class="clue-scroll"
+				scroll-y
+				:show-scrollbar="false"
+				:refresher-enabled="true"
+				:refresher-triggered="refreshing"
+				@refresherrefresh="onRefresh"
+				@scrolltolower="onLoadMore"
+				:lower-threshold="100"
+			>
+				<view v-if="list.length" class="feed">
+					<view class="feed-group" v-for="group in groupedList" :key="group.label">
+						<!-- 时间分组标题：蓝色账本标线 + 大字号组名 -->
+						<view class="group-head" v-if="group.label">
+							<view class="group-tick"></view>
+							<text class="group-label">{{ group.label }}</text>
+							<text class="group-count">{{ group.items.length }} 位客户</text>
+						</view>
+
 						<view
-							class="clue-card"
-							hover-class="clue-card-hover"
-							:hover-stay-time="60"
-							@tap="goDetail(item)"
+							class="feed-item"
+							v-for="item in group.items"
+							:key="item.id"
 						>
-							<!-- 第一行：头像 + 客户名 / 状态时间 + 抢线索 -->
-							<view class="card-head">
-								<image class="card-avatar" :src="item._avatarUrl || getAvatarUrl(item.userLogo, item.userSex)" mode="aspectFill" @error="onAvatarError(item)" />
-								<view class="card-head-mid">
-									<text class="card-name">{{ item.userName }}</text>
-									<view class="card-sub">
-										<view class="card-state" :class="{ 'is-giveup': item.status === '放弃' }">
-											<text class="card-state-dot"></text>
-											<text>{{ item.status === '放弃' ? '已放弃' : '可跟进' }}</text>
+							<view
+								class="clue-card"
+								hover-class="clue-card-hover"
+								:hover-stay-time="60"
+								@tap="goDetail(item)"
+							>
+								<!-- 第一行：头像 + 客户名 / 状态时间 + 抢线索 -->
+								<view class="card-head">
+									<image class="card-avatar" :src="item._avatarUrl || getAvatarUrl(item.userLogo, item.userSex)" mode="aspectFill" @error="onAvatarError(item)" />
+									<view class="card-head-mid">
+										<text class="card-name">{{ item.userName }}</text>
+										<view class="card-sub">
+											<view class="card-state" :class="{ 'is-giveup': item.status === '放弃' }">
+												<text class="card-state-dot"></text>
+												<text>{{ item.status === '放弃' ? '已放弃' : '可跟进' }}</text>
+											</view>
+											<text class="card-sub-sep">·</text>
+											<text class="card-time">{{ formatDiffTime(item.lastDate) }}</text>
 										</view>
-										<text class="card-sub-sep">·</text>
-										<text class="card-time">{{ formatDiffTime(item.lastDate) }}</text>
+									</view>
+									<view class="card-rob" hover-class="card-rob-hover" :hover-stay-time="60" @tap.stop="onRob(item)">
+										<text>抢线索</text>
 									</view>
 								</view>
-								<view class="card-rob" hover-class="card-rob-hover" :hover-stay-time="60" @tap.stop="onRob(item)">
-									<text>抢线索</text>
-								</view>
-							</view>
 
-							<!-- 第二行：下载次数强调胶囊 + 浏览次数灰字 + 客户标签，同一行内收窄高度 -->
-							<view class="card-info">
-								<view class="info-key">
-									<text class="info-key-num">{{ item.downloadCount || 0 }}</text>
-									<text class="info-key-unit">次下载</text>
+								<!-- 第二行：下载大数字 + 浏览灰字 + 客户标签 -->
+								<view class="card-info">
+									<view class="info-key">
+										<text class="info-key-num">{{ item.downloadCount || 0 }}</text>
+										<text class="info-key-unit">次下载</text>
+									</view>
+									<text class="info-browse">浏览 {{ item.browseCount || 0 }} 次</text>
+									<text
+										class="client-tag"
+										:class="tagClassMap[tag]"
+										v-for="tag in item.labelNum"
+										:key="tag"
+									>{{ tagDicMap[tag] }}</text>
 								</view>
-								<text class="info-browse">浏览 {{ item.browseCount || 0 }} 次</text>
-								<text
-									class="client-tag"
-									:class="tagClassMap[tag]"
-									v-for="tag in item.labelNum"
-									:key="tag"
-								>{{ tagDicMap[tag] }}</text>
-							</view>
 
-							<!-- 最近行为产品条 -->
-							<view class="card-prod" v-if="item.last">
-								<image class="card-prod-img" :src="getProdImg(item.last.prodLogo)" mode="aspectFill" />
-								<text class="card-prod-type">{{ item.last.type === 1 ? '浏览了' : '下载了' }}</text>
-								<text class="card-prod-name">{{ item.last.prodName }}</text>
+								<!-- 最近行为产品条 -->
+								<view class="card-prod" v-if="item.last">
+									<image class="card-prod-img" :src="getProdImg(item.last.prodLogo)" mode="aspectFill" />
+									<text class="card-prod-type">{{ item.last.type === 1 ? '浏览了' : '下载了' }}</text>
+									<text class="card-prod-name">{{ item.last.prodName }}</text>
+								</view>
 							</view>
 						</view>
 					</view>
-				</view>
 
-				<!-- 加载更多 -->
-				<view class="clue-loadmore">
-					<view v-if="loadStatus === 'loading'" class="loadmore-loading">
-						<view class="loadmore-spinner"></view>
-						<text>加载中...</text>
+					<!-- 加载更多 -->
+					<view class="clue-loadmore">
+						<view v-if="loadStatus === 'loading'" class="loadmore-loading">
+							<view class="loadmore-spinner"></view>
+							<text>加载中...</text>
+						</view>
+						<text v-else-if="loadStatus === 'nomore'" class="loadmore-end">已加载全部线索</text>
 					</view>
-					<text v-else-if="loadStatus === 'nomore'" class="loadmore-end">已加载全部线索</text>
 				</view>
-			</view>
 
-			<!-- 空状态 -->
-			<view v-else-if="!loading" class="clue-empty">
-				<image class="clue-empty-img" src="https://img2cdn.global-dsc.cn/dgzz_img/8520f53eeff21f5a388f30b67e54e287.png" mode="aspectFit" />
-				<text class="clue-empty-title">暂无相关线索</text>
-				<text class="clue-empty-hint">换个筛选条件，或下拉刷新试试</text>
-			</view>
-		</scroll-view>
+				<!-- 空状态 -->
+				<view v-else-if="!loading" class="clue-empty">
+					<image class="clue-empty-img" src="https://img2cdn.global-dsc.cn/dgzz_img/8520f53eeff21f5a388f30b67e54e287.png" mode="aspectFit" />
+					<text class="clue-empty-title">暂无相关线索</text>
+					<text class="clue-empty-hint">换个筛选条件，或下拉刷新试试</text>
+				</view>
+			</scroll-view>
+		</view>
 	</view>
 </template>
 
@@ -402,469 +406,516 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-// ----------- 柔和色板（低饱和，主色跟 tabBar 蓝色系保持一致）
-$bg: #f5f6f8; // 页面底色
-$line: #e6e9ee; // 分割线
-$t1: #2f343b; // 主文字
-$t2: #767c86; // 次文字
-$t3: #a5abb4; // 弱文字
-$blue: #146ff6; // 主色（亮蓝）
-$blue-soft: #e7f0fe; // 主色浅底
-$green: #6bb894; // 可跟进状态色
+// ----------- 「线索账本」editorial 色板：纸白 + 墨 + 品牌蓝唯一强调
+$paper: #f4f6fa; // 页面底色（冷调浅蓝灰）
+$card: #ffffff; // sheet 白
+$ink: #191c22; // 主文字（墨）
+$t2: #6b7079; // 次文字
+$t3: #a6abb4; // 弱文字
+$line: rgba(25, 28, 34, 0.08); // 发丝线
+$blue: #146ff6; // 品牌主色（唯一强调）
+$blue-soft: #ebf2fe; // 主色浅底
+$green: #3e9c6e; // 可跟进状态色
 
 .clue-page {
 	display: flex;
 	flex-direction: column;
 	height: 100vh;
-	background: $bg;
+	background: $paper;
 
-	// ----------- 顶部：浅蓝氛围底 + 图标统计卡
+	// ----------- 顶部：editorial 账本式排版，品牌蓝极浅渐变落到页面底色
 	.clue-header {
-		padding: 32rpx 20rpx 24rpx;
-		background: linear-gradient(180deg, #e3edfb 0%, #f5f6f8 100%);
+		padding: 0 36rpx 40rpx;
+		background: linear-gradient(180deg, #e0ecfd 0%, rgba(244, 246, 250, 0) 100%);
 
-		// 统计：图标小块 + 数字标签横排
-		.header-stats {
-			display: flex;
-			align-items: center;
-			padding: 28rpx 12rpx;
-			background: #fff;
-			border-radius: 24rpx;
-			box-shadow: 0 6rpx 20rpx rgba(47, 52, 59, 0.06);
-
-			.hs-item {
-				flex: 1;
-				display: flex;
-				align-items: center;
-				justify-content: center;
-				gap: 14rpx;
-
-				// 图标小块：跟数字同色系的浅底
-				.hs-icon {
-					width: 56rpx;
-					height: 56rpx;
-					border-radius: 16rpx;
-					display: flex;
-					align-items: center;
-					justify-content: center;
-					font-size: 28rpx;
-					flex-shrink: 0;
-
-					&.ic-browse { background: #e8f0fd; }
-					&.ic-download { background: #fdf1e2; }
-					&.ic-robbed { background: #e7f6ee; }
-				}
-
-				.hs-text {
-					display: flex;
-					flex-direction: column;
-					gap: 6rpx;
-
-					.hs-num {
-						font-size: 36rpx;
-						font-weight: 700;
-						line-height: 1;
-						font-variant-numeric: tabular-nums;
-
-						&.num-browse { color: #5b8def; }
-						&.num-download { color: #f6a548; }
-						&.num-robbed { color: #55b889; }
-					}
-					.hs-label {
-						font-size: 20rpx;
-						color: $t3;
-					}
-				}
-			}
+		// 宽字距英文小标
+		.header-eyebrow {
+			font-size: 20rpx;
+			font-weight: 600;
+			color: $t3;
+			letter-spacing: 8rpx;
 		}
-	}
 
-	// ----------- 筛选条：白色横条向上重叠头部，选中项淡蓝底
-	.clue-filter {
-		display: flex;
-		margin: 0 24rpx;
-		padding: 10rpx;
-		background: #fff;
-		border-radius: 16rpx;
-		box-shadow: 0 6rpx 20rpx rgba(22, 48, 94, 0.1);
-		position: relative;
-		z-index: 2;
-
-		.filter-chip {
-			flex: 1;
+		// 主指标：68rpx 巨号等宽数字，全页视觉锚点
+		.header-hero {
 			display: flex;
-			align-items: center;
-			justify-content: center;
-			gap: 8rpx;
-			padding: 6rpx 0;
-			border-radius: 12rpx;
-			transition: background 0.2s ease;
+			align-items: baseline;
+			gap: 16rpx;
+			margin-top: 20rpx;
 
-			// 展开中 / 已选非默认值：淡蓝底 + 蓝字
-			&.active,
-			&.is-on {
-				background: $blue-soft;
-
-				.chip-text { color: $blue; font-weight: 600; }
-				.chip-arrow { color: $blue; }
+			.hero-num {
+				font-size: 68rpx;
+				font-weight: 700;
+				color: $ink;
+				line-height: 1;
+				font-variant-numeric: tabular-nums;
+				letter-spacing: -1rpx;
 			}
-
-			.chip-text {
-				font-size: 25rpx;
+			.hero-label {
+				font-size: 24rpx;
 				color: $t2;
-				max-width: 150rpx;
-				overflow: hidden;
-				white-space: nowrap;
-				text-overflow: ellipsis;
-			}
-			.chip-arrow {
-				font-size: 32rpx;
-				color: $t3;
-				transition: transform 0.2s ease;
-				&.up { transform: rotate(180deg); }
+				letter-spacing: 2rpx;
 			}
 		}
-	}
 
-	// ----------- 下拉遮罩：层级在筛选条之下，不盖住筛选按钮
-	.drop-mask {
-		position: fixed;
-		top: 0;
-		left: 0;
-		right: 0;
-		bottom: 0;
-		background: rgba(47, 52, 59, 0.35);
-		z-index: 1;
-	}
-
-	// ----------- 下拉面板：贴着筛选条下方展开
-	.drop-panel {
-		position: absolute;
-		top: calc(100% + 12rpx);
-		left: 0;
-		right: 0;
-		background: #fff;
-		border-radius: 16rpx;
-		box-shadow: 0 10rpx 30rpx rgba(47, 52, 59, 0.14);
-		padding: 12rpx 0;
-		z-index: 3;
-
-		.drop-option {
+		// 次级指标：小数字横排 + 发丝竖线
+		.header-subs {
 			display: flex;
 			align-items: center;
-			justify-content: space-between;
-			margin: 0 12rpx;
-			padding: 24rpx 20rpx;
-			border-radius: 12rpx;
+			margin-top: 28rpx;
 
-			&.on {
-				background: $blue-soft;
-
-				.drop-option-label { color: $blue; font-weight: 600; }
-			}
-
-			.drop-option-main {
+			.sub-item {
 				display: flex;
-				flex-direction: column;
-				gap: 6rpx;
+				align-items: baseline;
+				gap: 10rpx;
 
-				.drop-option-label { font-size: 28rpx; color: $t1; }
-				.drop-option-desc { font-size: 23rpx; color: $t2; }
-			}
-
-			.drop-option-check {
-				font-size: 28rpx;
-				color: $blue;
-			}
-		}
-	}
-
-	// ----------- 时间轴 Feed 滚动区
-	.clue-scroll {
-		flex: 1;
-		min-height: 0;
-		padding: 24rpx 32rpx 0;
-		box-sizing: border-box;
-
-		// Feed 容器
-		.feed {
-			padding-bottom: 20rpx;
-
-			// 分组之间拉开间距
-			.feed-group + .feed-group {
-				margin-top: 12rpx;
-			}
-
-			// 时间分组头：分组名 + 客户数胶囊
-			.group-head {
-				display: flex;
-				align-items: center;
-				gap: 14rpx;
-				padding: 8rpx 4rpx 22rpx;
-
-				.group-label {
-					font-size: 28rpx;
+				.sub-num {
+					font-size: 32rpx;
 					font-weight: 700;
-					color: $t1;
-					letter-spacing: 2rpx;
+					color: $ink;
+					font-variant-numeric: tabular-nums;
 				}
-				.group-count {
-					font-size: 20rpx;
-					color: $blue;
-					background: $blue-soft;
-					padding: 4rpx 14rpx;
-					border-radius: 999rpx;
-				}
-			}
-
-			// Feed 单项
-			.feed-item {
-				margin-bottom: 24rpx;
-			}
-		}
-
-		// ----------- 线索卡片
-		.clue-card {
-			background: #fff;
-			border-radius: 22rpx;
-			padding: 26rpx 24rpx;
-			// 双层柔和阴影：近距离一层压边，远距离一层撑起浮起感（阴影带蓝调，跟头部呼应）
-			box-shadow: 0 2rpx 6rpx rgba(22, 48, 94, 0.04), 0 10rpx 28rpx rgba(22, 48, 94, 0.07);
-			transition: box-shadow 0.18s ease, transform 0.18s ease;
-
-			&.clue-card-hover {
-				transform: translateY(-2rpx);
-				box-shadow: 0 4rpx 10rpx rgba(22, 48, 94, 0.06), 0 16rpx 34rpx rgba(22, 48, 94, 0.11);
-			}
-
-			// 第一行：头像 + 客户名 / 状态时间 + 抢线索
-			.card-head {
-				display: flex;
-				align-items: center;
-				gap: 16rpx;
-
-				.card-avatar {
-					width: 72rpx;
-					height: 72rpx;
-					border-radius: 50%;
-					background: #f0f2f5;
-					border: 2rpx solid #eef2f7;
-					box-sizing: border-box;
-					flex-shrink: 0;
-				}
-
-				.card-head-mid {
-					flex: 1;
-					min-width: 0;
-					display: flex;
-					flex-direction: column;
-					gap: 6rpx;
-
-					// 客户名放大加粗，作为卡片第一视觉重点
-					.card-name {
-						font-size: 34rpx;
-						font-weight: 700;
-						color: $t1;
-						line-height: 1.15;
-						overflow: hidden;
-						white-space: nowrap;
-						text-overflow: ellipsis;
-					}
-					.card-sub {
-						display: flex;
-						align-items: center;
-						gap: 8rpx;
-						font-size: 21rpx;
-
-						// 状态：圆点 + 文字，可跟进绿 / 已放弃灰
-						.card-state {
-							display: inline-flex;
-							align-items: center;
-							gap: 8rpx;
-							color: $green;
-
-							.card-state-dot {
-								width: 10rpx;
-								height: 10rpx;
-								border-radius: 50%;
-								background: $green;
-							}
-
-							&.is-giveup {
-								color: $t3;
-
-								.card-state-dot { background: #ccd2da; }
-							}
-						}
-						.card-sub-sep { color: $t3; }
-						.card-time { color: $t3; }
-					}
-				}
-
-				// 抢线索：蓝色渐变 + 投影，作为卡片唯一操作重点
-				.card-rob {
-					flex-shrink: 0;
-					padding: 14rpx 32rpx;
-					border-radius: 999rpx;
-					background: linear-gradient(135deg, #3d8bff 0%, #146ff6 100%);
-					font-size: 24rpx;
-					font-weight: 600;
-					color: #fff;
-					box-shadow: 0 6rpx 14rpx rgba(20, 111, 246, 0.35);
-					transition: opacity 0.15s ease, box-shadow 0.15s ease;
-
-					&.card-rob-hover {
-						opacity: 0.88;
-						box-shadow: 0 3rpx 8rpx rgba(20, 111, 246, 0.25);
-					}
-				}
-			}
-
-			// 第二行：下载强调胶囊 + 浏览灰字 + 标签，一行内排完
-			.card-info {
-				margin-top: 18rpx;
-				display: flex;
-				align-items: center;
-				flex-wrap: wrap;
-				gap: 12rpx;
-
-				// 下载次数：最强意向行为，用淡蓝底 + 大数字突出
-				.info-key {
-					display: inline-flex;
-					align-items: baseline;
-					gap: 5rpx;
-					padding: 6rpx 16rpx 7rpx;
-					border-radius: 10rpx;
-					background: $blue-soft;
-
-					.info-key-num {
-						font-size: 30rpx;
-						font-weight: 700;
-						color: $blue;
-						line-height: 1;
-						font-variant-numeric: tabular-nums;
-					}
-					.info-key-unit {
-						font-size: 21rpx;
-						color: $blue;
-					}
-				}
-
-				// 浏览次数：次要信息，纯灰字不加底
-				.info-browse {
+				.sub-label {
 					font-size: 22rpx;
 					color: $t3;
 				}
 			}
 
-			// 最近行为产品条
-			.card-prod {
-				margin-top: 18rpx;
+			.sub-line {
+				width: 1rpx;
+				height: 24rpx;
+				background: $line;
+				margin: 0 32rpx;
+			}
+		}
+	}
+
+	// ----------- 白色大圆角 sheet：从页头下方托起所有内容
+	.clue-sheet {
+		flex: 1;
+		min-height: 0;
+		display: flex;
+		flex-direction: column;
+		background: $card;
+		border-radius: 32rpx 32rpx 0 0;
+		box-shadow: 0 -8rpx 32rpx rgba(25, 28, 34, 0.05);
+		overflow: hidden;
+
+		// 筛选条：纯文字 chip，选中底部蓝色短线
+		.clue-filter {
+			display: flex;
+			flex-shrink: 0;
+			border-bottom: 1rpx solid $line;
+			position: relative;
+			z-index: 2;
+
+			.filter-chip {
+				flex: 1;
+				position: relative;
 				display: flex;
 				align-items: center;
-				padding: 14rpx 16rpx;
-				background: #f7f9fc;
-				border: 1rpx solid #eef1f6;
-				border-radius: 14rpx;
+				justify-content: center;
+				gap: 8rpx;
+				padding: 26rpx 0;
 
-				.card-prod-img {
-					width: 44rpx;
-					height: 44rpx;
-					border-radius: 10rpx;
-					background: #eceef1;
-					flex-shrink: 0;
+				// 展开中 / 已选非默认值：蓝字加粗
+				&.active,
+				&.is-on {
+					.chip-text { color: $blue; font-weight: 600; }
+					.chip-arrow { color: $blue; }
 				}
-				.card-prod-type {
-					margin-left: 12rpx;
-					font-size: 22rpx;
-					color: $blue;
-					flex-shrink: 0;
-				}
-				.card-prod-name {
-					flex: 1;
-					margin-left: 8rpx;
-					font-size: 23rpx;
+
+				.chip-text {
+					font-size: 26rpx;
 					color: $t2;
+					max-width: 160rpx;
 					overflow: hidden;
 					white-space: nowrap;
 					text-overflow: ellipsis;
 				}
-			}
-		}
+				.chip-arrow {
+					font-size: 30rpx;
+					color: $t3;
+					transition: transform 0.2s ease;
+					&.up { transform: rotate(180deg); }
+				}
 
-		// ----------- 加载更多
-		.clue-loadmore {
-			display: flex;
-			justify-content: center;
-			padding: 16rpx 0 30rpx;
-
-			.loadmore-loading {
-				display: flex;
-				align-items: center;
-				gap: 12rpx;
-				font-size: 24rpx;
-				color: $t2;
-
-				.loadmore-spinner {
-					width: 26rpx;
-					height: 26rpx;
-					border-radius: 50%;
-					border: 3rpx solid $line;
-					border-top-color: $blue;
-					animation: spin 0.8s linear infinite;
+				// 选中态底部蓝色短线
+				.chip-bar {
+					position: absolute;
+					bottom: -1rpx;
+					left: 50%;
+					transform: translateX(-50%);
+					width: 48rpx;
+					height: 4rpx;
+					border-radius: 2rpx;
+					background: $blue;
 				}
 			}
-			.loadmore-end {
-				font-size: 24rpx;
-				color: $t3;
+		}
+
+		// 下拉遮罩
+		.drop-mask {
+			position: fixed;
+			top: 0;
+			left: 0;
+			right: 0;
+			bottom: 0;
+			background: rgba(25, 28, 34, 0.35);
+			z-index: 1;
+		}
+
+		// 下拉面板：悬浮式，脱离筛选条，完整圆角 + 展开动画
+		.drop-panel {
+			position: absolute;
+			top: calc(100% + 16rpx);
+			left: 16rpx;
+			right: 16rpx;
+			background: $card;
+			border-radius: 20rpx;
+			border: 1rpx solid $line;
+			box-shadow: 0 20rpx 48rpx rgba(25, 28, 34, 0.14);
+			padding: 12rpx;
+			z-index: 3;
+			animation: dropIn 0.18s ease;
+
+			.drop-option {
+				position: relative;
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				padding: 24rpx 20rpx 24rpx 30rpx;
+				border-radius: 12rpx;
+				transition: background 0.15s ease;
+
+				// 选中态：浅蓝底 + 左侧蓝色账本标线 + 对勾
+				&.on {
+					background: $blue-soft;
+
+					&::before {
+						content: '';
+						position: absolute;
+						left: 12rpx;
+						top: 50%;
+						transform: translateY(-50%);
+						width: 5rpx;
+						height: 32rpx;
+						border-radius: 3rpx;
+						background: $blue;
+					}
+
+					.drop-option-label { color: $blue; font-weight: 600; }
+				}
+
+				.drop-option-main {
+					display: flex;
+					flex-direction: column;
+					gap: 6rpx;
+
+					.drop-option-label { font-size: 28rpx; color: $ink; }
+					.drop-option-desc { font-size: 23rpx; color: $t2; }
+				}
+
+				// 对勾做成蓝色小圆点底，比裸字符精致
+				.drop-option-check {
+					width: 36rpx;
+					height: 36rpx;
+					border-radius: 50%;
+					background: $blue;
+					color: #fff;
+					font-size: 22rpx;
+					display: flex;
+					align-items: center;
+					justify-content: center;
+					line-height: 1;
+				}
 			}
 		}
 
-		// ----------- 空状态
-	.clue-empty {
-			display: flex;
-			flex-direction: column;
-			align-items: center;
-			padding-top: 130rpx;
+		// ----------- 时间轴 Feed 滚动区
+		.clue-scroll {
+			flex: 1;
+			min-height: 0;
+			padding: 8rpx 32rpx 0;
+			box-sizing: border-box;
 
-			.clue-empty-img {
-				width: 240rpx;
-				height: 240rpx;
+			// 隐藏滚动条但保留滚动
+			&::-webkit-scrollbar {
+				display: none;
+				width: 0 !important;
 			}
-			.clue-empty-title {
-				margin-top: 28rpx;
-				font-size: 28rpx;
-				color: $t2;
+
+			.feed {
+				padding-bottom: 20rpx;
 			}
-			.clue-empty-hint {
-				margin-top: 12rpx;
-				font-size: 24rpx;
-				color: $t3;
+
+			// 时间分组头：蓝色账本标线 + 大字号组名
+			.group-head {
+				display: flex;
+				align-items: center;
+				gap: 14rpx;
+				padding: 36rpx 0 20rpx;
+
+				.group-tick {
+					width: 6rpx;
+					height: 30rpx;
+					border-radius: 3rpx;
+					background: $blue;
+				}
+				.group-label {
+					font-size: 34rpx;
+					font-weight: 700;
+					color: $ink;
+					letter-spacing: 2rpx;
+				}
+				.group-count {
+					font-size: 22rpx;
+					color: $t3;
+					font-variant-numeric: tabular-nums;
+				}
+			}
+
+			// ----------- 线索条目：无卡片盒，发丝底线分隔
+			.clue-card {
+				padding: 28rpx 4rpx 30rpx;
+				border-bottom: 1rpx solid $line;
+				transition: opacity 0.15s ease;
+
+				&.clue-card-hover {
+					opacity: 0.6;
+				}
+
+				// 第一行：头像 + 客户名 / 状态时间 + 抢线索
+				.card-head {
+					display: flex;
+					align-items: center;
+					gap: 18rpx;
+
+					.card-avatar {
+						width: 80rpx;
+						height: 80rpx;
+						border-radius: 50%;
+						background: #f0f2f5;
+						flex-shrink: 0;
+					}
+
+					.card-head-mid {
+						flex: 1;
+						min-width: 0;
+						display: flex;
+						flex-direction: column;
+						gap: 8rpx;
+
+						// 客户名放大加粗，作为条目第一视觉重点
+						.card-name {
+							font-size: 34rpx;
+							font-weight: 700;
+							color: $ink;
+							line-height: 1.15;
+							overflow: hidden;
+							white-space: nowrap;
+							text-overflow: ellipsis;
+						}
+						.card-sub {
+							display: flex;
+							align-items: center;
+							gap: 8rpx;
+							font-size: 21rpx;
+
+							// 状态：圆点 + 文字，可跟进绿 / 已放弃灰
+							.card-state {
+								display: inline-flex;
+								align-items: center;
+								gap: 8rpx;
+								color: $green;
+
+								.card-state-dot {
+									width: 10rpx;
+									height: 10rpx;
+									border-radius: 50%;
+									background: $green;
+								}
+
+								&.is-giveup {
+									color: $t3;
+
+									.card-state-dot { background: #ccd2da; }
+								}
+							}
+							.card-sub-sep { color: $t3; }
+							.card-time { color: $t3; }
+						}
+					}
+
+					// 抢线索：品牌蓝实心胶囊，全条目唯一操作重点
+					.card-rob {
+						flex-shrink: 0;
+						padding: 14rpx 32rpx;
+						border-radius: 999rpx;
+						background: $blue;
+						font-size: 24rpx;
+						font-weight: 600;
+						color: #fff;
+						letter-spacing: 1rpx;
+						box-shadow: 0 6rpx 14rpx rgba(20, 111, 246, 0.28);
+						transition: opacity 0.15s ease;
+
+						&.card-rob-hover {
+							opacity: 0.85;
+						}
+					}
+				}
+
+				// 第二行：下载大数字 + 浏览灰字 + 标签
+				.card-info {
+					margin-top: 20rpx;
+					display: flex;
+					align-items: center;
+					flex-wrap: wrap;
+					gap: 14rpx;
+
+					// 下载次数：最强意向行为，蓝色大数字直接呈现，不套胶囊
+					.info-key {
+						display: inline-flex;
+						align-items: baseline;
+						gap: 6rpx;
+
+						.info-key-num {
+							font-size: 40rpx;
+							font-weight: 700;
+							color: $blue;
+							line-height: 1;
+							font-variant-numeric: tabular-nums;
+						}
+						.info-key-unit {
+							font-size: 21rpx;
+							color: $blue;
+						}
+					}
+
+					// 浏览次数：次要信息，纯灰字
+					.info-browse {
+						font-size: 22rpx;
+						color: $t3;
+					}
+				}
+
+				// 最近行为产品条：纸白内嵌行
+				.card-prod {
+					margin-top: 20rpx;
+					display: flex;
+					align-items: center;
+					padding: 14rpx 18rpx;
+					background: #f5f7fa;
+					border-radius: 12rpx;
+
+					.card-prod-img {
+						width: 44rpx;
+						height: 44rpx;
+						border-radius: 8rpx;
+						background: #eceef1;
+						flex-shrink: 0;
+					}
+					.card-prod-type {
+						margin-left: 12rpx;
+						font-size: 22rpx;
+						color: $blue;
+						flex-shrink: 0;
+					}
+					.card-prod-name {
+						flex: 1;
+						margin-left: 8rpx;
+						font-size: 23rpx;
+						color: $t2;
+						overflow: hidden;
+						white-space: nowrap;
+						text-overflow: ellipsis;
+					}
+				}
+			}
+
+			// ----------- 加载更多
+			.clue-loadmore {
+				display: flex;
+				justify-content: center;
+				padding: 24rpx 0 36rpx;
+
+				.loadmore-loading {
+					display: flex;
+					align-items: center;
+					gap: 12rpx;
+					font-size: 24rpx;
+					color: $t2;
+
+					.loadmore-spinner {
+						width: 26rpx;
+						height: 26rpx;
+						border-radius: 50%;
+						border: 3rpx solid $line;
+						border-top-color: $blue;
+						animation: spin 0.8s linear infinite;
+					}
+				}
+				.loadmore-end {
+					font-size: 24rpx;
+					color: $t3;
+				}
+			}
+
+			// ----------- 空状态
+			.clue-empty {
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				padding-top: 130rpx;
+
+				.clue-empty-img {
+					width: 240rpx;
+					height: 240rpx;
+				}
+				.clue-empty-title {
+					margin-top: 28rpx;
+					font-size: 28rpx;
+					color: $t2;
+				}
+				.clue-empty-hint {
+					margin-top: 12rpx;
+					font-size: 24rpx;
+					color: $t3;
+				}
 			}
 		}
 	}
 }
 
-// ----------- 客户标签（低饱和柔和底色）
+// ----------- 客户标签（描边式，比色块底更克制）
 .client-tag {
 	display: inline-block;
 	text-align: center;
 	border-radius: 8rpx;
-	font-size: 21rpx;
-	padding: 6rpx 14rpx;
+	font-size: 20rpx;
+	padding: 4rpx 12rpx;
 	line-height: 1.5;
+	background: #f0f2f5;
+	color: $t2;
 
-	&.yixiang { background: #fdeeee; color: #d9736f; }
-	&.huoyue { background: #fdf2e8; color: #cf8b53; }
-	&.xuanzhong { background: #fcf6e5; color: #bf9c47; }
-	&.youzhi { background: #eaf7f0; color: #5bb98c; }
-	&.qiye { background: #eaf2fd; color: #6288c4; }
-	&.dingyue { background: #e8f5f4; color: #4f9d99; }
+	&.yixiang { background: #faecea; color: #c96a5e; }
+	&.huoyue { background: #faf0e4; color: #c08a4e; }
+	&.xuanzhong { background: #f8f3e0; color: #a8893f; }
+	&.youzhi { background: #e6f3ec; color: #3e9c6e; }
+	&.qiye { background: $blue-soft; color: $blue; }
+	&.dingyue { background: #e4f2f1; color: #4a8f8b; }
 }
 
 // ----------- 动画关键帧
 @keyframes spin {
 	from { transform: rotate(0deg); }
 	to { transform: rotate(360deg); }
+}
+
+// 下拉面板展开：轻微上浮 + 淡入
+@keyframes dropIn {
+	from { opacity: 0; transform: translateY(-12rpx); }
+	to { opacity: 1; transform: translateY(0); }
 }
 </style>

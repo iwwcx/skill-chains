@@ -5,12 +5,7 @@
       <view class="back-home-arrow"></view>
     </view>
 
-    <!-- ========== 背景装饰 ========== -->
-    <view class="bg-deco bg-deco-1"></view>
-    <view class="bg-deco bg-deco-2"></view>
-    <view class="bg-deco bg-deco-3"></view>
-
-    <!-- ========== 顶部品牌区 ========== -->
+    <!-- ========== 顶部品牌区：左对齐 editorial ========== -->
     <view class="brand-area">
       <view class="logo-wrap">
         <image class="logo" src="https://img2cdn.global-dsc.cn/dgzz_img/2c4a54497e379b23b5f29fc400f03a5a.jpg" mode="aspectFit" />
@@ -19,27 +14,27 @@
       <view class="app-slogan">销售更轻松 · 目标更精准</view>
     </view>
 
-    <!-- ========== 卡片登录区 ========== -->
-    <view class="login-card">
+    <!-- ========== 登录表单区：下划线式输入 ========== -->
+    <view class="login-form">
       <view class="welcome-title">欢迎使用</view>
       <view class="welcome-tip">请使用您的账号登录</view>
 
       <!-- 账号输入框 -->
       <view class="input-item">
-        <text class="input-icon">👤</text>
+        <text class="input-label">账号</text>
         <input class="input-box" type="text" v-model="account" placeholder="请输入账号" maxlength="50" />
       </view>
 
       <!-- 密码输入框 -->
       <view class="input-item">
-        <text class="input-icon">🔒</text>
+        <text class="input-label">密码</text>
         <input class="input-box" :type="showPwd ? 'text' : 'password'" v-model="password" placeholder="请输入密码" maxlength="20" />
         <text class="pwd-eye" @tap="showPwd = !showPwd">{{ showPwd ? '🙈' : '👁' }}</text>
       </view>
 
       <!-- 验证码输入框（密码错误多次后后台要求验证码才显示） -->
       <view class="input-item verify-item" v-if="verifySrc">
-        <text class="input-icon">🛡</text>
+        <text class="input-label">验证码</text>
         <input class="input-box" type="text" v-model="verify" placeholder="请输入验证码" maxlength="10" />
         <image class="verify-img" :src="verifySrc + '?key=' + account + '&v=' + verifyTimeStep" mode="aspectFill" @tap="refreshVerify" />
       </view>
@@ -171,7 +166,15 @@ export default {
 </script>
 
 <style scoped lang="scss">
-// ==================== 返回首页按钮
+// ----------- 「线索账本」editorial 色板（与全站一致）
+$paper: #f4f6fa; // 页面底色（冷调浅蓝灰）
+$ink: #191c22; // 主文字
+$t2: #6b7079; // 次文字
+$t3: #a6abb4; // 弱文字
+$line: rgba(25, 28, 34, 0.08); // 发丝线
+$blue: #146ff6; // 品牌主色
+
+// ==================== 返回首页按钮（纸白底上用墨箭头）
 .back-home-btn {
   position: fixed;
   top: calc(96rpx + env(safe-area-inset-top));
@@ -183,75 +186,40 @@ export default {
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  backdrop-filter: blur(8rpx);
 
   .back-home-arrow {
     width: 22rpx;
     height: 22rpx;
-    border-left: 5rpx solid #fff;
-    border-bottom: 5rpx solid #fff;
+    border-left: 5rpx solid $ink;
+    border-bottom: 5rpx solid $ink;
     transform: rotate(45deg);
     margin-left: 8rpx;
   }
 }
 
-// ==================== 登录页容器
+// ==================== 登录页容器：浅蓝渐变顶落到冷灰底
 .login-page {
   position: relative;
   width: 100%;
   min-height: 100vh;
-  padding: 0 48rpx;
+  padding: 0 56rpx;
   box-sizing: border-box;
-  background: linear-gradient(160deg, #a8d8ff 0%, #4f8eff 45%, #2962ff 100%);
+  background: linear-gradient(180deg, #e0ecfd 0%, $paper 42%);
   overflow: hidden;
 }
 
-// ==================== 背景装饰圆
-.bg-deco {
-  position: absolute;
-  border-radius: 50%;
-  pointer-events: none;
-  filter: blur(2rpx);
-}
-.bg-deco-1 {
-  width: 520rpx;
-  height: 520rpx;
-  top: -160rpx;
-  right: -160rpx;
-  background: rgba(255, 255, 255, 0.18);
-}
-.bg-deco-2 {
-  width: 320rpx;
-  height: 320rpx;
-  top: 360rpx;
-  left: -120rpx;
-  background: rgba(255, 255, 255, 0.12);
-}
-.bg-deco-3 {
-  width: 240rpx;
-  height: 240rpx;
-  bottom: -80rpx;
-  right: -60rpx;
-  background: rgba(255, 255, 255, 0.1);
-}
-
-// ==================== 顶部品牌区
+// ==================== 顶部品牌区：左对齐 editorial
 .brand-area {
-  position: relative;
-  z-index: 2;
-  padding-top: 200rpx;
+  padding-top: 220rpx;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
 
   .logo-wrap {
-    width: 230rpx;
-    height: 230rpx;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 16rpx 40rpx rgba(41, 98, 255, 0.35);
+    width: 120rpx;
+    height: 120rpx;
+    border-radius: 28rpx;
+    box-shadow: 0 12rpx 28rpx rgba(20, 111, 246, 0.18);
     overflow: hidden;
 
     .logo {
@@ -261,102 +229,89 @@ export default {
   }
 
   .app-name {
-    margin-top: 32rpx;
-    font-size: 52rpx;
+    margin-top: 36rpx;
+    font-size: 64rpx;
     font-weight: 800;
-    color: #fff;
-    letter-spacing: 8rpx;
-    text-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.15);
+    color: $ink;
+    letter-spacing: 10rpx;
   }
 
   .app-slogan {
-    margin-top: 14rpx;
-    font-size: 26rpx;
-    color: rgba(255, 255, 255, 0.9);
-    letter-spacing: 4rpx;
+    margin-top: 18rpx;
+    font-size: 24rpx;
+    color: $t3;
+    letter-spacing: 6rpx;
   }
 }
 
 // ==================== 产品卖点
 .value-props {
-  position: relative;
-  z-index: 2;
-  margin-top: 78rpx;
+  margin-top: 64rpx;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   gap: 14rpx;
 
   .value-title {
-    font-size: 28rpx;
-    color: rgba(255, 255, 255, 0.95);
-    font-weight: 600;
-    letter-spacing: 2rpx;
-    text-shadow: 0 2rpx 6rpx rgba(0, 0, 0, 0.12);
+    font-size: 23rpx;
+    color: $t3;
+    letter-spacing: 3rpx;
   }
 
   .value-item {
     font-size: 28rpx;
-    color: rgba(255, 255, 255, 0.9);
+    color: $t2;
     margin-top: 10rpx;
     letter-spacing: 2rpx;
-    text-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.1);
   }
 }
 
-// ==================== 登录卡片
-.login-card {
-  position: relative;
-  z-index: 2;
-  margin-top: 60rpx;
-  padding: 60rpx 48rpx;
-  background: #fff;
-  border-radius: 32rpx;
-  box-shadow: 0 20rpx 60rpx rgba(0, 0, 0, 0.12);
+// ==================== 登录表单：下划线式输入
+.login-form {
+  margin-top: 72rpx;
 
   .welcome-title {
-    font-size: 44rpx;
+    font-size: 40rpx;
     font-weight: 700;
-    color: #1a1a1a;
+    color: $ink;
     line-height: 1.2;
+    letter-spacing: 3rpx;
   }
 
   .welcome-tip {
-    margin-top: 14rpx;
-    font-size: 26rpx;
-    color: #999;
+    margin-top: 12rpx;
+    font-size: 24rpx;
+    color: $t3;
   }
 
-  // 账号 / 密码输入框
+  // 账号 / 密码输入框：左侧标签 + 底部发丝线，聚焦线变蓝
   .input-item {
-    margin-top: 36rpx;
+    margin-top: 44rpx;
     display: flex;
     align-items: center;
-    height: 96rpx;
-    padding: 0 28rpx;
-    background: #f7f9fc;
-    border-radius: 48rpx;
+    height: 88rpx;
+    border-bottom: 1rpx solid rgba(25, 28, 34, 0.16);
     box-sizing: border-box;
-    border: 2rpx solid transparent;
-    transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+    transition: border-color 0.2s;
 
     &:focus-within {
-      border-color: rgba(41, 98, 255, 0.35);
-      box-shadow: 0 0 0 4rpx rgba(41, 98, 255, 0.08);
-      background: #fff;
+      border-bottom: 2rpx solid $blue;
     }
 
-    .input-icon {
-      font-size: 32rpx;
-      margin-right: 16rpx;
+    .input-label {
+      width: 96rpx;
       flex-shrink: 0;
+      font-size: 28rpx;
+      font-weight: 600;
+      color: $ink;
+      letter-spacing: 2rpx;
     }
 
     .input-box {
       flex: 1;
-      height: 96rpx;
+      height: 88rpx;
       font-size: 30rpx;
-      color: #1a1a1a;
+      color: $ink;
       background: transparent;
     }
 
@@ -377,21 +332,22 @@ export default {
     }
   }
 
-  // 登录按钮
+  // 登录按钮：品牌蓝实心胶囊
   .login-btn {
-    margin-top: 50rpx;
+    margin-top: 72rpx;
     width: 100%;
     height: 96rpx;
-    border-radius: 48rpx;
-    background: linear-gradient(135deg, #4f8eff 0%, #2962ff 100%);
+    border-radius: 999rpx;
+    background: $blue;
     color: #fff;
     font-size: 32rpx;
     font-weight: 600;
+    letter-spacing: 10rpx;
     display: flex;
     align-items: center;
     justify-content: center;
     border: none;
-    box-shadow: 0 12rpx 28rpx rgba(41, 98, 255, 0.35);
+    box-shadow: 0 12rpx 28rpx rgba(20, 111, 246, 0.3);
 
     &::after {
       border: none;
@@ -400,13 +356,13 @@ export default {
     &[disabled] {
       opacity: 0.7;
       color: #fff;
-      background: linear-gradient(135deg, #4f8eff 0%, #2962ff 100%);
+      background: $blue;
     }
   }
 
   // 服务协议
   .agreement {
-    margin-top: 46rpx;
+    margin-top: 48rpx;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -418,7 +374,7 @@ export default {
       width: 26rpx;
       height: 26rpx;
       margin-right: 8rpx;
-      border: 2rpx solid #999;
+      border: 2rpx solid $t3;
       border-radius: 6rpx;
       display: flex;
       align-items: center;
@@ -427,8 +383,8 @@ export default {
       transition: all 0.2s;
 
       &.checked {
-        background: #2962ff;
-        border-color: #2962ff;
+        background: $blue;
+        border-color: $blue;
       }
 
       .checkbox-tick {
@@ -439,10 +395,10 @@ export default {
     }
 
     .agreement-text {
-      color: #999;
+      color: $t3;
     }
     .agreement-link {
-      color: #2962ff;
+      color: $blue;
     }
   }
 }
@@ -454,9 +410,8 @@ export default {
   left: 0;
   right: 0;
   text-align: center;
-  font-size: 26rpx;
-  color: rgba(255, 255, 255, 0.85);
-  letter-spacing: 2rpx;
-  z-index: 2;
+  font-size: 22rpx;
+  color: $t3;
+  letter-spacing: 3rpx;
 }
 </style>

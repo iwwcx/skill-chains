@@ -1,16 +1,8 @@
 <!-- 客户主页（线索详情） -->
 <template>
 	<view class="client-home">
-		<!-- 顶部客户信息区：深蓝渐变商务风 -->
+		<!-- 顶部客户信息区：浅色 editorial 排版 -->
 		<view class="client-card">
-			<!-- 装饰光斑 + 圆环，增加头部层次感 -->
-			<view class="cc-glow glow-a"></view>
-			<view class="cc-glow glow-b"></view>
-			<view class="cc-ring ring-a"></view>
-			<view class="cc-ring ring-b"></view>
-			<!-- 斜向光束装饰，让头部更灵动 -->
-			<view class="cc-streak streak-a"></view>
-			<view class="cc-streak streak-b"></view>
 			<view class="cc-main">
 				<image class="cc-avatar" :src="avatarErr ? getAvatarUrl('', clueData.userSex) : getAvatarUrl(clueData.userLogo, clueData.userSex)" mode="aspectFill" @error="avatarErr = true" />
 				<view class="cc-info">
@@ -24,7 +16,7 @@
 				</view>
 			</view>
 
-			<!-- 头部数据概览：玻璃拟态数据条 -->
+			<!-- 头部数据概览：大数字横排 + 发丝竖线 -->
 			<view class="cc-stats">
 				<view class="cc-stat">
 					<text class="ccs-num">{{ clueData.browseCount || 0 }}</text>
@@ -43,40 +35,38 @@
 			</view>
 		</view>
 
-		<!-- 操作栏：白色卡片向上重叠头部；已抢且是自己线索才显示全部，否则只显示抢线索 -->
+		<!-- 操作栏：白色 sheet 上沿，已抢且是自己线索才显示全部 -->
 		<view class="cc-actions" v-if="isRobed">
 			<view class="ca-item" :class="{ disabled: !isSelf }" @tap="handleContact">
-				<view class="ca-icon ca-icon-chat">💬</view>
+				<view class="ca-icon">💬</view>
 				<text class="ca-text">在线沟通</text>
 			</view>
 			<view class="ca-item" :class="{ disabled: !isSelf }" @tap="handleAddRecord">
-				<view class="ca-icon ca-icon-edit">✎</view>
+				<view class="ca-icon">✎</view>
 				<text class="ca-text">写跟进</text>
 			</view>
 			<view class="ca-item" :class="{ disabled: !isSelf }" @tap="handlePhone">
-				<view class="ca-icon ca-icon-phone">📞</view>
+				<view class="ca-icon">📞</view>
 				<text class="ca-text">电话</text>
 			</view>
 			<view class="ca-item" :class="{ disabled: !isSelf && !isAdmin }" @tap="handleTransfer">
-				<view class="ca-icon ca-icon-transfer">↗</view>
+				<view class="ca-icon">↗</view>
 				<text class="ca-text">转交</text>
 			</view>
 		</view>
 
-		<!-- Tabs：分段控件样式 -->
+		<!-- Tabs：下划线式 -->
 		<view class="tabs">
-			<view class="tabs-track">
-				<view class="tab" :class="{ active: tabIndex === 0 }" @tap="tabClick(0)">
-					<text>客户动态</text>
-					<text class="tab-count">{{ clueList.length }}</text>
-				</view>
-				<view class="tab" :class="{ active: tabIndex === 1 }" @tap="tabClick(1)">
-					<text>跟进记录</text>
-					<text class="tab-count">{{ recordList.length }}</text>
-				</view>
-				<view class="tab" :class="{ active: tabIndex === 2 }" @tap="tabClick(2)">
-					<text>资料</text>
-				</view>
+			<view class="tab" :class="{ active: tabIndex === 0 }" @tap="tabClick(0)">
+				<text>客户动态</text>
+				<text class="tab-count">{{ clueList.length }}</text>
+			</view>
+			<view class="tab" :class="{ active: tabIndex === 1 }" @tap="tabClick(1)">
+				<text>跟进记录</text>
+				<text class="tab-count">{{ recordList.length }}</text>
+			</view>
+			<view class="tab" :class="{ active: tabIndex === 2 }" @tap="tabClick(2)">
+				<text>资料</text>
 			</view>
 		</view>
 
@@ -84,7 +74,7 @@
 		<swiper :current="swiperIndex" @animationfinish="onSwiperChange" class="swiper-box">
 			<!-- 客户动态 -->
 			<swiper-item>
-				<scroll-view class="tab-scroll" scroll-y :refresher-enabled="true" :refresher-triggered="trendRefresh" @refresherrefresh="onTrendRefresh">
+				<scroll-view class="tab-scroll" scroll-y :show-scrollbar="false" :refresher-enabled="true" :refresher-triggered="trendRefresh" @refresherrefresh="onTrendRefresh">
 					<!-- 顶部小统计 -->
 					<view class="trend-top">
 						<view class="tt-filter" @tap="trendFilterShow = true">
@@ -124,7 +114,7 @@
 
 			<!-- 跟进记录 -->
 			<swiper-item>
-				<scroll-view class="tab-scroll" scroll-y :refresher-enabled="true" :refresher-triggered="recordRefresh" @refresherrefresh="onRecordRefresh">
+				<scroll-view class="tab-scroll" scroll-y :show-scrollbar="false" :refresher-enabled="true" :refresher-triggered="recordRefresh" @refresherrefresh="onRecordRefresh">
 					<view class="record-list" v-if="recordList.length">
 						<view class="record-item" v-for="(item, index) in recordList" :key="index">
 							<view class="record-left">
@@ -157,7 +147,7 @@
 
 			<!-- 资料 -->
 			<swiper-item>
-				<scroll-view class="tab-scroll" scroll-y>
+				<scroll-view class="tab-scroll" scroll-y :show-scrollbar="false">
 					<view class="info-list">
 						<view class="info-sec-title">
 							<text class="ist-bar"></text>
@@ -533,108 +523,42 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-// ----------- 柔和色板（与列表页保持一致）
-$bg: #f4f6fa;
-$line: #edf0f5;
-$t1: #1f2733;
-$t2: #6b7380;
-$t3: #a3aab6;
-$blue: #146ff6;
-$blue-soft: #eaf2fe;
-$red: #e06560;
+// ----------- 「线索账本」editorial 色板（与全站一致）
+$paper: #f4f6fa; // 页面底色（冷调浅蓝灰）
+$card: #ffffff; // 卡片白
+$ink: #191c22; // 主文字
+$t2: #6b7079; // 次文字
+$t3: #a6abb4; // 弱文字
+$line: rgba(25, 28, 34, 0.08); // 发丝线
+$blue: #146ff6; // 品牌主色
+$blue-soft: #ebf2fe; // 主色浅底
+$red: #c9543f; // 低饱和赭红
 
 .client-home {
 	display: flex;
 	flex-direction: column;
 	height: 100vh;
-	background: $bg;
+	background: $paper;
 
-	// ----------- 顶部客户信息区：深蓝渐变
+	// ----------- 顶部客户信息区：浅色 editorial，品牌蓝极浅渐变落到底色
 	.client-card {
-		position: relative;
-		overflow: hidden;
 		flex-shrink: 0;
-		padding: 38rpx 32rpx 40rpx; // 底部多留空间，给操作卡向上重叠
-		background: linear-gradient(155deg, #071e47 0%, #0c3a8c 48%, #1767e6 100%);
-
-		// 装饰光斑：径向渐变圆，营造层次
-		.cc-glow {
-			position: absolute;
-			border-radius: 50%;
-			background: radial-gradient(circle, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0) 70%);
-			pointer-events: none;
-
-			&.glow-a {
-				width: 380rpx;
-				height: 380rpx;
-				top: -160rpx;
-				right: -100rpx;
-			}
-			&.glow-b {
-				width: 280rpx;
-				height: 280rpx;
-				bottom: -140rpx;
-				left: -90rpx;
-			}
-		}
-
-		// 装饰圆环：细描边同心圆，增加精致感
-		.cc-ring {
-			position: absolute;
-			border-radius: 50%;
-			border: 1rpx solid rgba(255, 255, 255, 0.14);
-			pointer-events: none;
-
-			&.ring-a {
-				width: 300rpx;
-				height: 300rpx;
-				top: -110rpx;
-				right: 60rpx;
-			}
-			&.ring-b {
-				width: 180rpx;
-				height: 180rpx;
-				top: -50rpx;
-				right: 120rpx;
-				border-color: rgba(255, 255, 255, 0.22);
-			}
-		}
-
-		// 斜向光束：细长的渐变条，斜切过头部
-		.cc-streak {
-			position: absolute;
-			width: 140rpx;
-			height: 420rpx;
-			border-radius: 999rpx;
-			background: linear-gradient(180deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0) 100%);
-			transform: rotate(28deg);
-			pointer-events: none;
-
-			&.streak-a {
-				top: -140rpx;
-				right: 220rpx;
-			}
-			&.streak-b {
-				width: 70rpx;
-				top: -110rpx;
-				right: 130rpx;
-				background: linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 100%);
-			}
-		}
+		padding: 36rpx 36rpx 40rpx;
+		background: linear-gradient(180deg, #e0ecfd 0%, rgba(244, 246, 250, 0) 100%);
 
 		.cc-main {
-			position: relative;
 			display: flex;
 			align-items: center;
 			gap: 24rpx;
 
+			// 头像：大圆 + 白环 + 轻投影
 			.cc-avatar {
-				width: 112rpx;
-				height: 112rpx;
+				width: 120rpx;
+				height: 120rpx;
 				border-radius: 50%;
-				background: rgba(255, 255, 255, 0.2);
-				border: 4rpx solid rgba(255, 255, 255, 0.85);
-				box-shadow: 0 0 0 8rpx rgba(255, 255, 255, 0.12), 0 10rpx 24rpx rgba(3, 16, 43, 0.35);
+				background: #eceef1;
+				border: 5rpx solid #fff;
+				box-shadow: 0 10rpx 28rpx rgba(25, 28, 34, 0.1);
 				box-sizing: border-box;
 				flex-shrink: 0;
 			}
@@ -647,114 +571,91 @@ $red: #e06560;
 				gap: 10rpx;
 
 				.cc-name {
-					font-size: 40rpx;
+					font-size: 44rpx;
 					font-weight: 700;
-					letter-spacing: 1rpx;
-					color: #fff;
+					letter-spacing: 3rpx;
+					color: $ink;
 					overflow: hidden;
 					white-space: nowrap;
 					text-overflow: ellipsis;
 				}
 				.cc-company {
 					font-size: 24rpx;
-					color: rgba(255, 255, 255, 0.75);
+					color: $t2;
+					letter-spacing: 1rpx;
 					overflow: hidden;
 					white-space: nowrap;
 					text-overflow: ellipsis;
 				}
-
-				// 区域标签：半透明胶囊 + 亮点
-				.cc-region {
-					display: flex;
-					align-items: center;
-					gap: 8rpx;
-					align-self: flex-start;
-					margin-top: 4rpx;
-					padding: 4rpx 18rpx;
-					border-radius: 999rpx;
-					background: rgba(255, 255, 255, 0.14);
-					font-size: 21rpx;
-					color: rgba(255, 255, 255, 0.9);
-
-					.cc-region-dot {
-						width: 8rpx;
-						height: 8rpx;
-						border-radius: 50%;
-						background: #8fd6ff;
-						flex-shrink: 0;
-					}
-				}
 			}
 
-			// 状态标签：渐变底上用半透明白底 + 白字（玻璃拟态）
+			// 状态标签：蓝色描边胶囊，点击改状态
 			.cc-status {
 				flex-shrink: 0;
 				display: inline-flex;
 				align-items: center;
 				gap: 6rpx;
-				padding: 10rpx 24rpx;
+				padding: 10rpx 22rpx;
 				border-radius: 999rpx;
-				background: rgba(255, 255, 255, 0.16);
-				border: 1rpx solid rgba(255, 255, 255, 0.35);
-				box-shadow: 0 4rpx 12rpx rgba(3, 16, 43, 0.2);
+				background: $card;
+				border: 1rpx solid rgba(20, 111, 246, 0.35);
 				font-size: 23rpx;
-				color: #fff;
+				font-weight: 600;
+				color: $blue;
 
 				.cc-status-arrow {
 					font-size: 24rpx;
-					color: rgba(255, 255, 255, 0.85);
+					color: $blue;
 				}
 			}
 		}
 
-		// 头部数据概览：半透明玻璃拟态数据条
+		// 头部数据概览：大数字横排 + 发丝竖线
 		.cc-stats {
-			position: relative;
-			margin-top: 28rpx;
+			margin-top: 40rpx;
 			display: flex;
 			align-items: center;
-			padding: 16rpx 0;
-			border-radius: 16rpx;
-			background: rgba(255, 255, 255, 0.12);
-			border: 1rpx solid rgba(255, 255, 255, 0.18);
 
 			.cc-stat {
 				flex: 1;
 				display: flex;
 				flex-direction: column;
 				align-items: center;
-				gap: 2rpx;
+				gap: 10rpx;
 
 				.ccs-num {
-					font-size: 30rpx;
+					font-size: 48rpx;
 					font-weight: 700;
-					color: #fff;
+					color: $ink;
+					line-height: 1;
+					font-variant-numeric: tabular-nums;
 				}
 				.ccs-label {
-					font-size: 20rpx;
-					color: rgba(255, 255, 255, 0.65);
+					font-size: 21rpx;
+					color: $t3;
+					letter-spacing: 3rpx;
 				}
 			}
 
 			// 数据之间的分隔竖线
 			.cc-stat-divider {
 				width: 1rpx;
-				height: 32rpx;
-				background: rgba(255, 255, 255, 0.2);
+				height: 48rpx;
+				background: $line;
 			}
 		}
 	}
 
-	// ----------- 操作栏：白色卡片向上重叠头部
+	// ----------- 操作栏：白卡上浮到 sheet 交界
 	.cc-actions {
 		flex-shrink: 0;
 		display: flex;
 		align-items: center;
-		margin: -48rpx 24rpx 0;
-		padding: 30rpx 0;
-		background: #fff;
-		border-radius: 24rpx;
-		box-shadow: 0 10rpx 30rpx rgba(12, 40, 92, 0.12);
+		margin: 0 24rpx;
+		padding: 32rpx 0;
+		background: $card;
+		border-radius: 20rpx;
+		box-shadow: 0 8rpx 28rpx rgba(25, 28, 34, 0.07);
 		position: relative;
 		z-index: 2;
 
@@ -763,85 +664,77 @@ $red: #e06560;
 			display: flex;
 			flex-direction: column;
 			align-items: center;
-			gap: 12rpx;
+			gap: 14rpx;
 
 			&.disabled {
-				opacity: 0.35;
+				opacity: 0.3;
 			}
 
-			// 每个操作图标配独立的柔和渐变底色，更有品质感
+			// 操作图标：浅灰圆 + 发丝边，克制统一
 			.ca-icon {
-				width: 76rpx;
-				height: 76rpx;
+				width: 84rpx;
+				height: 84rpx;
 				border-radius: 50%;
-				background: $blue-soft;
+				background: #f4f6fa;
+				border: 1rpx solid $line;
 				display: flex;
 				align-items: center;
 				justify-content: center;
-				font-size: 32rpx;
-
-				&.ca-icon-chat {
-					background: linear-gradient(135deg, #e6f0ff 0%, #d4e5ff 100%);
-				}
-				&.ca-icon-edit {
-					background: linear-gradient(135deg, #e5f8ef 0%, #d3f0e2 100%);
-				}
-				&.ca-icon-phone {
-					background: linear-gradient(135deg, #fff2e2 0%, #ffe6c8 100%);
-				}
-				&.ca-icon-transfer {
-					background: linear-gradient(135deg, #f0ebfd 0%, #e3d9fb 100%);
-				}
+				font-size: 34rpx;
 			}
 			.ca-text {
 				font-size: 22rpx;
-				color: #4a5160;
+				color: $t2;
+				letter-spacing: 1rpx;
 			}
 		}
 	}
 
-	// ----------- Tabs：分段控件（灰色轨道 + 白色选中胶囊）
+	// ----------- Tabs：下划线式
 	.tabs {
 		flex-shrink: 0;
-		padding: 20rpx 24rpx 4rpx;
-
-		.tabs-track {
-			display: flex;
-			padding: 6rpx;
-			border-radius: 999rpx;
-			background: #e7ebf1;
-		}
+		display: flex;
+		padding: 0 36rpx;
+		margin-top: 12rpx;
+		border-bottom: 1rpx solid $line;
 
 		.tab {
-			flex: 1;
+			position: relative;
 			display: flex;
 			align-items: center;
 			justify-content: center;
 			gap: 8rpx;
-			padding: 16rpx 0;
-			border-radius: 999rpx;
-			font-size: 26rpx;
+			padding: 26rpx 4rpx;
+			margin-right: 56rpx;
+			font-size: 27rpx;
 			color: $t2;
 
 			&.active {
-				background: #fff;
-				color: $t1;
-				font-weight: 600;
-				box-shadow: 0 4rpx 12rpx rgba(12, 40, 92, 0.12);
+				color: $ink;
+				font-weight: 700;
+
+				&::after {
+					content: '';
+					position: absolute;
+					left: 50%;
+					transform: translateX(-50%);
+					bottom: -1rpx;
+					width: 44rpx;
+					height: 4rpx;
+					border-radius: 2rpx;
+					background: $blue;
+				}
 
 				.tab-count {
-					background: $blue-soft;
 					color: $blue;
 				}
 			}
 
-			// 数字角标：小胶囊
+			// 数字角标：纯文字，等宽数字
 			.tab-count {
-				padding: 2rpx 12rpx;
-				border-radius: 999rpx;
-				background: rgba(255, 255, 255, 0.75);
-				font-size: 20rpx;
+				font-size: 22rpx;
 				color: $t3;
+				font-variant-numeric: tabular-nums;
 			}
 		}
 	}
@@ -854,6 +747,12 @@ $red: #e06560;
 		.tab-scroll {
 			height: 100%;
 			box-sizing: border-box;
+
+			// 隐藏滚动条但保留滚动
+			&::-webkit-scrollbar {
+				display: none;
+				width: 0 !important;
+			}
 		}
 	}
 
@@ -862,7 +761,7 @@ $red: #e06560;
 		display: flex;
 		align-items: center;
 		gap: 20rpx;
-		padding: 24rpx 32rpx 12rpx;
+		padding: 28rpx 36rpx 8rpx;
 
 		.tt-filter {
 			display: inline-flex;
@@ -870,7 +769,7 @@ $red: #e06560;
 			gap: 6rpx;
 			padding: 10rpx 22rpx;
 			border-radius: 999rpx;
-			background: #fff;
+			background: $card;
 			border: 1rpx solid $line;
 			font-size: 23rpx;
 			color: $t2;
@@ -885,81 +784,77 @@ $red: #e06560;
 	// 动态时间轴
 	.trend-list {
 		position: relative;
-		padding: 24rpx 32rpx 20rpx 72rpx;
+		padding: 28rpx 36rpx 20rpx 76rpx;
 
 		// 竖线更细更淡，降低存在感
 		.trend-line {
 			position: absolute;
-			left: 47rpx;
-			top: 40rpx;
+			left: 51rpx;
+			top: 44rpx;
 			bottom: 40rpx;
-			width: 2rpx;
-			background: linear-gradient(180deg, #dde4ee 0%, #eef1f5 100%);
+			width: 1rpx;
+			background: $line;
 		}
 
 		.trend-item {
 			position: relative;
-			margin-bottom: 24rpx;
+			margin-bottom: 28rpx;
 
-			// 时间轴节点：外发光圆点
+			// 时间轴节点：实心小圆点
 			.trend-node {
 				position: absolute;
-				left: -32rpx;
-				top: 8rpx;
-				width: 18rpx;
-				height: 18rpx;
+				left: -31rpx;
+				top: 10rpx;
+				width: 12rpx;
+				height: 12rpx;
 				border-radius: 50%;
-				background: #fff;
-				border: 4rpx solid $blue;
-				box-shadow: 0 0 0 6rpx rgba(20, 111, 246, 0.12);
-				box-sizing: border-box;
+				background: $blue;
+				box-shadow: 0 0 0 6rpx rgba(20, 111, 246, 0.1);
 
 				&.is-download {
-					border-color: $red;
-					box-shadow: 0 0 0 6rpx rgba(224, 101, 96, 0.12);
+					background: $red;
+					box-shadow: 0 0 0 6rpx rgba(201, 84, 63, 0.1);
 				}
 			}
 
 			.trend-content {
-				background: #fff;
-				border-radius: 20rpx;
-				padding: 22rpx 24rpx;
-				box-shadow: 0 2rpx 6rpx rgba(12, 40, 92, 0.04), 0 10rpx 24rpx rgba(12, 40, 92, 0.06);
+				background: $card;
+				border-radius: 16rpx;
+				padding: 24rpx;
+				box-shadow: 0 4rpx 20rpx rgba(25, 28, 34, 0.04);
 
 				.trend-head {
 					display: flex;
 					align-items: center;
 					justify-content: space-between;
 
-					// 动态类型：彩色徽章
+					// 动态类型：纯文字 + 前置小圆点，不套胶囊
 					.trend-type {
-						font-size: 22rpx;
+						font-size: 23rpx;
 						font-weight: 600;
 						color: $blue;
-						background: $blue-soft;
-						padding: 6rpx 20rpx;
-						border-radius: 999rpx;
+						letter-spacing: 1rpx;
 
 						&.is-download {
 							color: $red;
-							background: #fdeceb;
 						}
 					}
 					.trend-time {
 						font-size: 21rpx;
 						color: $t3;
+						font-variant-numeric: tabular-nums;
 					}
 				}
 
-				// 产品行：浅灰内嵌面板，层次更清晰
+				// 产品行：纸白内嵌行
 				.trend-prod {
-					margin-top: 16rpx;
+					margin-top: 18rpx;
 					display: flex;
 					align-items: center;
 					gap: 16rpx;
-					padding: 14rpx 16rpx;
-					border-radius: 14rpx;
-					background: #f6f8fb;
+					padding: 14rpx 18rpx;
+					border-radius: 12rpx;
+					background: #f5f7fa;
 
 					.trend-prod-img {
 						width: 64rpx;
@@ -971,7 +866,7 @@ $red: #e06560;
 					.trend-prod-name {
 						flex: 1;
 						font-size: 24rpx;
-						color: $t1;
+						color: $ink;
 						overflow: hidden;
 						white-space: nowrap;
 						text-overflow: ellipsis;
@@ -981,21 +876,19 @@ $red: #e06560;
 		}
 	}
 
-	// 放弃按钮：白底红字描边，弱化但醒目
+	// 放弃按钮：纯文字赭红，弱化但醒目
 	.trend-abandon {
-		margin: 8rpx 32rpx 48rpx;
+		margin: 16rpx 36rpx 56rpx;
 		text-align: center;
 		padding: 24rpx 0;
-		border-radius: 16rpx;
-		background: #fff;
-		border: 1rpx solid #f3d4d2;
 		font-size: 25rpx;
+		letter-spacing: 2rpx;
 		color: $red;
 	}
 
 	// ----------- 跟进记录
 	.record-list {
-		padding: 28rpx 32rpx 48rpx;
+		padding: 32rpx 36rpx 56rpx;
 
 		.record-item {
 			display: flex;
@@ -1009,20 +902,22 @@ $red: #e06560;
 				.record-date {
 					font-size: 25rpx;
 					font-weight: 600;
-					color: $t1;
+					color: $ink;
 					line-height: 1.3;
+					font-variant-numeric: tabular-nums;
 				}
 				.record-time {
 					margin-top: 4rpx;
 					font-size: 21rpx;
 					color: $t3;
+					font-variant-numeric: tabular-nums;
 				}
 				// 时间轴连接线
 				.record-bar {
 					flex: 1;
 					margin: 14rpx 0 14rpx 50rpx;
-					width: 2rpx;
-					background: linear-gradient(180deg, #dde4ee 0%, #eef1f5 100%);
+					width: 1rpx;
+					background: $line;
 				}
 			}
 
@@ -1031,10 +926,10 @@ $red: #e06560;
 				flex: 1;
 				min-width: 0;
 				margin-bottom: 24rpx;
-				padding: 22rpx 24rpx;
-				background: #fff;
-				border-radius: 20rpx;
-				box-shadow: 0 2rpx 6rpx rgba(12, 40, 92, 0.04), 0 10rpx 24rpx rgba(12, 40, 92, 0.06);
+				padding: 24rpx;
+				background: $card;
+				border-radius: 16rpx;
+				box-shadow: 0 4rpx 20rpx rgba(25, 28, 34, 0.04);
 
 				.record-row {
 					display: flex;
@@ -1055,14 +950,14 @@ $red: #e06560;
 					.record-desc {
 						flex: 1;
 						font-size: 23rpx;
-						color: $t1;
+						color: $ink;
 						line-height: 1.5;
 					}
 				}
 
-				// 转交/放弃记录高亮：浅红底卡片
+				// 转交/放弃记录高亮：左侧赭红标线
 				&.is-notice {
-					background: #fdf4f3;
+					border-left: 4rpx solid $red;
 
 					.record-label,
 					.record-desc {
@@ -1075,17 +970,17 @@ $red: #e06560;
 
 	// ----------- 资料tab
 	.info-list {
-		margin: 28rpx 32rpx 0;
-		background: #fff;
+		margin: 32rpx 24rpx 0;
+		background: $card;
 		border-radius: 20rpx;
-		padding: 8rpx 28rpx 12rpx;
-		box-shadow: 0 2rpx 6rpx rgba(12, 40, 92, 0.04), 0 10rpx 24rpx rgba(12, 40, 92, 0.06);
+		padding: 8rpx 32rpx 12rpx;
+		box-shadow: 0 4rpx 20rpx rgba(25, 28, 34, 0.04);
 
 		.info-item {
 			display: flex;
 			align-items: center;
 			justify-content: space-between;
-			padding: 30rpx 0;
+			padding: 32rpx 0;
 			border-bottom: 1rpx solid $line;
 
 			&:last-child {
@@ -1101,7 +996,7 @@ $red: #e06560;
 				text-align: right;
 				font-size: 26rpx;
 				font-weight: 500;
-				color: $t1;
+				color: $ink;
 				margin-left: 24rpx;
 				overflow: hidden;
 				white-space: nowrap;
@@ -1110,36 +1005,37 @@ $red: #e06560;
 		}
 	}
 
-	// 分区标题：蓝色渐变竖条 + 加粗文字
+	// 分区标题：蓝色账本标线 + 加粗文字
 	.info-sec-title {
 		display: flex;
 		align-items: center;
 		gap: 12rpx;
-		padding: 24rpx 0 8rpx;
+		padding: 28rpx 0 8rpx;
 		font-size: 27rpx;
-		font-weight: 600;
-		color: $t1;
+		font-weight: 700;
+		color: $ink;
+		letter-spacing: 2rpx;
 
 		.ist-bar {
-			width: 8rpx;
+			width: 6rpx;
 			height: 28rpx;
-			border-radius: 4rpx;
-			background: linear-gradient(180deg, #4a9bff 0%, #146ff6 100%);
+			border-radius: 3rpx;
+			background: $blue;
 		}
 	}
 
 	.info-prod-section {
-		margin: 24rpx 32rpx 48rpx;
-		background: #fff;
+		margin: 28rpx 24rpx 56rpx;
+		background: $card;
 		border-radius: 20rpx;
-		padding: 8rpx 28rpx 12rpx;
-		box-shadow: 0 2rpx 6rpx rgba(12, 40, 92, 0.04), 0 10rpx 24rpx rgba(12, 40, 92, 0.06);
+		padding: 8rpx 32rpx 12rpx;
+		box-shadow: 0 4rpx 20rpx rgba(25, 28, 34, 0.04);
 
 		.info-prod-item {
 			display: flex;
 			justify-content: space-between;
 			align-items: center;
-			padding: 22rpx 0;
+			padding: 24rpx 0;
 			border-bottom: 1rpx solid $line;
 
 			&:last-child {
@@ -1149,7 +1045,7 @@ $red: #e06560;
 			.info-prod-name {
 				flex: 1;
 				font-size: 24rpx;
-				color: $t1;
+				color: $ink;
 				overflow: hidden;
 				white-space: nowrap;
 				text-overflow: ellipsis;
@@ -1178,9 +1074,9 @@ $red: #e06560;
 			width: 140rpx;
 			height: 140rpx;
 			border-radius: 50%;
-			background: #ecf0f6;
+			background: #eceef1;
 			font-size: 64rpx;
-			color: #c3cbd8;
+			color: #b6bcc5;
 			display: flex;
 			align-items: center;
 			justify-content: center;
@@ -1196,19 +1092,19 @@ $red: #e06560;
 	.rob-bar {
 		flex-shrink: 0;
 		padding: 20rpx 32rpx;
-		background: #fff;
-		box-shadow: 0 -4rpx 16rpx rgba(12, 40, 92, 0.06);
+		background: $card;
+		border-top: 1rpx solid $line;
 
 		.rob-btn {
 			text-align: center;
 			padding: 28rpx 0;
 			border-radius: 999rpx;
-			background: linear-gradient(135deg, #4a9bff 0%, #146ff6 100%);
+			background: $blue;
 			font-size: 30rpx;
 			font-weight: 600;
-			letter-spacing: 6rpx;
+			letter-spacing: 8rpx;
 			color: #fff;
-			box-shadow: 0 10rpx 24rpx rgba(20, 111, 246, 0.35);
+			box-shadow: 0 10rpx 24rpx rgba(20, 111, 246, 0.3);
 		}
 	}
 
@@ -1219,14 +1115,14 @@ $red: #e06560;
 		left: 0;
 		right: 0;
 		bottom: 0;
-		background: rgba(20, 28, 40, 0.45);
+		background: rgba(25, 28, 34, 0.45);
 		z-index: 99;
 		display: flex;
 		align-items: flex-end;
 
 		.pop-panel {
 			width: 100%;
-			background: #fff;
+			background: $card;
 			border-radius: 32rpx 32rpx 0 0;
 			padding: 8rpx 0 calc(20rpx + env(safe-area-inset-bottom));
 
@@ -1234,12 +1130,13 @@ $red: #e06560;
 				display: flex;
 				align-items: center;
 				justify-content: space-between;
-				padding: 30rpx 32rpx 20rpx;
+				padding: 34rpx 36rpx 24rpx;
 
 				text:first-child {
-					font-size: 30rpx;
-					font-weight: 600;
-					color: $t1;
+					font-size: 32rpx;
+					font-weight: 700;
+					color: $ink;
+					letter-spacing: 2rpx;
 				}
 				.pop-close {
 					font-size: 32rpx;
@@ -1251,7 +1148,7 @@ $red: #e06560;
 				display: flex;
 				align-items: center;
 				justify-content: space-between;
-				padding: 28rpx 32rpx;
+				padding: 30rpx 36rpx;
 				border-top: 1rpx solid $line;
 
 				&.on {
@@ -1266,7 +1163,7 @@ $red: #e06560;
 
 				text:first-child {
 					font-size: 28rpx;
-					color: $t1;
+					color: $ink;
 				}
 				.pop-check {
 					font-size: 28rpx;
@@ -1276,21 +1173,21 @@ $red: #e06560;
 
 			// 放弃弹窗的输入框
 			.abandon-input {
-				margin: 8rpx 32rpx 24rpx;
-				width: calc(100% - 64rpx);
+				margin: 8rpx 36rpx 28rpx;
+				width: calc(100% - 72rpx);
 				height: 180rpx;
-				background: $bg;
+				background: $paper;
 				border-radius: 14rpx;
 				padding: 20rpx;
 				font-size: 26rpx;
-				color: $t1;
+				color: $ink;
 				box-sizing: border-box;
 			}
 
 			.abandon-btns {
 				display: flex;
-				gap: 16rpx;
-				padding: 0 32rpx;
+				gap: 20rpx;
+				padding: 0 36rpx;
 
 				.abandon-btn {
 					flex: 1;
@@ -1300,13 +1197,14 @@ $red: #e06560;
 					font-size: 28rpx;
 
 					&.cancel {
-						background: $bg;
+						background: #eef1f5;
 						color: $t2;
 					}
 					&.confirm {
-						background: linear-gradient(135deg, #4a9bff 0%, #146ff6 100%);
+						background: $blue;
+						font-weight: 600;
 						color: #fff;
-						box-shadow: 0 6rpx 16rpx rgba(20, 111, 246, 0.28);
+						box-shadow: 0 6rpx 16rpx rgba(20, 111, 246, 0.26);
 					}
 				}
 			}
