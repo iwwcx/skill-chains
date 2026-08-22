@@ -136,6 +136,24 @@
 						"navigationBarTextStyle": "black",
 						"backgroundColor": "#F4F6FA"
 					}
+				},
+				{
+					"path": "add-follow-record",
+					"style": {
+						"navigationBarTitleText": "写跟进",
+						"navigationBarBackgroundColor": "#F4F6FA",
+						"navigationBarTextStyle": "black",
+						"backgroundColor": "#F4F6FA"
+					}
+				},
+				{
+					"path": "clue-transfer",
+					"style": {
+						"navigationBarTitleText": "转交线索",
+						"navigationBarBackgroundColor": "#F4F6FA",
+						"navigationBarTextStyle": "black",
+						"backgroundColor": "#F4F6FA"
+					}
 				}
 			]
 		}

@@ -10,8 +10,8 @@
       <view class="logo-wrap">
         <image class="logo" src="https://img2cdn.global-dsc.cn/dgzz_img/2c4a54497e379b23b5f29fc400f03a5a.jpg" mode="aspectFit" />
       </view>
-      <view class="app-name">探客工兵</view>
-      <view class="app-slogan">销售更轻松 · 目标更精准</view>
+      <view class="app-name">工品链</view>
+      <view class="app-slogan">工品上码 · 码上获客</view>
     </view>
 
     <!-- ========== 登录表单区：下划线式输入 ========== -->
@@ -56,14 +56,14 @@
 
     <!-- ========== 产品卖点 ========== -->
     <view class="value-props">
-      <view class="value-title">探客工兵 — 解决工业品销售三难</view>
+      <view class="value-title">工品链 — 让每个工业品都成为获客入口</view>
       <!-- <view class="value-item">❖ 找精准目标客户难</view>
       <view class="value-item">❖ 没有联系人进门难</view>
       <view class="value-item">❖ 认识决策关键人难</view> -->
     </view>
 
     <!-- ========== 底部版权 ========== -->
-    <view class="footer">© 2026 苏州聚深软件有限公司</view>
+    <view class="footer">© 2026 杭州玖开科技有限公司</view>
   </view>
 </template>
 

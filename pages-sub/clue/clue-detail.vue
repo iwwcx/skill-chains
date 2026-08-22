@@ -16,41 +16,24 @@
 				</view>
 			</view>
 
-			<!-- 头部数据概览：大数字横排 + 发丝竖线 -->
-			<view class="cc-stats">
-				<view class="cc-stat">
-					<text class="ccs-num">{{ clueData.browseCount || 0 }}</text>
-					<text class="ccs-label">浏览</text>
-				</view>
-				<view class="cc-stat-divider"></view>
-				<view class="cc-stat">
-					<text class="ccs-num">{{ clueData.downloadCount || 0 }}</text>
-					<text class="ccs-label">下载</text>
-				</view>
-				<view class="cc-stat-divider"></view>
-				<view class="cc-stat">
-					<text class="ccs-num">{{ recordList.length }}</text>
-					<text class="ccs-label">跟进</text>
-				</view>
-			</view>
 		</view>
 
-		<!-- 操作栏：白色 sheet 上沿，已抢且是自己线索才显示全部 -->
+		<!-- 操作栏：整条白色胶囊，单字圆图标+文字横排，发丝竖线分隔；已抢才显示 -->
 		<view class="cc-actions" v-if="isRobed">
 			<view class="ca-item" :class="{ disabled: !isSelf }" @tap="handleContact">
-				<view class="ca-icon">💬</view>
+				<view class="ca-chip">沟</view>
 				<text class="ca-text">在线沟通</text>
 			</view>
 			<view class="ca-item" :class="{ disabled: !isSelf }" @tap="handleAddRecord">
-				<view class="ca-icon">✎</view>
+				<view class="ca-chip">跟</view>
 				<text class="ca-text">写跟进</text>
 			</view>
 			<view class="ca-item" :class="{ disabled: !isSelf }" @tap="handlePhone">
-				<view class="ca-icon">📞</view>
+				<view class="ca-chip">电</view>
 				<text class="ca-text">电话</text>
 			</view>
 			<view class="ca-item" :class="{ disabled: !isSelf && !isAdmin }" @tap="handleTransfer">
-				<view class="ca-icon">↗</view>
+				<view class="ca-chip">转</view>
 				<text class="ca-text">转交</text>
 			</view>
 		</view>
@@ -105,10 +88,6 @@
 						<text class="empty-text">暂无客户动态</text>
 					</view>
 
-					<!-- 放弃按钮：自己抢的线索才能放弃 -->
-					<view v-if="isSelf" class="trend-abandon" @tap="showAbandonPop = true">
-						<text>放弃线索</text>
-					</view>
 				</scroll-view>
 			</swiper-item>
 
@@ -123,17 +102,18 @@
 								<view class="record-bar" v-if="index !== recordList.length - 1"></view>
 							</view>
 							<view class="record-right" :class="{ 'is-notice': item.isTransfer === 1 || item.isTransfer === 2 }">
-								<view class="record-row">
-									<text class="record-label">状态</text>
-									<text class="record-desc">{{ item.intention }}</text>
+								<!-- 卡头：状态徽章 -->
+								<view class="record-head">
+									<text class="record-status">{{ item.intention }}</text>
 								</view>
-								<view class="record-row">
-									<text class="record-label">{{ recordContentLabel[item.isTransfer] || '记录' }}</text>
-									<text class="record-desc">{{ item.content }}</text>
+								<!-- 卡身：记录内容 -->
+								<view class="record-body">
+									<text class="record-body-label">{{ recordContentLabel[item.isTransfer] || '记录' }}</text>
+									<text class="record-body-content">{{ item.content }}</text>
 								</view>
-								<view class="record-row">
-									<text class="record-label">{{ recordNameLabel[item.isTransfer] || '跟进人' }}</text>
-									<text class="record-desc">{{ item.followUserName }}</text>
+								<!-- 卡脚：跟进人，发丝线隔开 -->
+								<view class="record-foot">
+									<text class="record-foot-text">{{ recordNameLabel[item.isTransfer] || '跟进人' }} · {{ item.followUserName }}</text>
 								</view>
 							</view>
 						</view>
@@ -189,6 +169,11 @@
 		<!-- 底部抢线索按钮：未被抢时显示 -->
 		<view v-if="!isRobed" class="rob-bar">
 			<view class="rob-btn" @tap="confirmRob">抢线索</view>
+		</view>
+
+		<!-- 底部放弃线索按钮：已抢且是自己的线索时显示，红底白字固定底部 -->
+		<view v-if="isRobed && isSelf" class="rob-bar">
+			<view class="rob-btn rob-abandon" @tap="showAbandonPop = true">放弃线索</view>
 		</view>
 
 		<!-- 状态更新弹窗 -->
@@ -250,6 +235,7 @@
 
 <script>
 import { getClueInfo, getClueUserInfo, getClueUserPhone, updateClueStatus, throwHighSeas, robClue } from '@/static/api/index.js'
+import { startChat } from '@/im-message/api/index.js'
 import { getProductImageUrl, getAvatarUrl } from '@/common/utils/index.js'
 
 // ----------- 状态选项（与 skill-chain 保持一致）
@@ -456,23 +442,38 @@ export default {
 				}
 			})
 		},
-		// ----------- 在线沟通
-		handleContact() {
+		// ----------- 在线沟通：先同步会话到服务端，再跳转单聊聊天页（与组织成员页 onStartChat 同一套）
+		async handleContact() {
 			if (!this.isSelf) {
 				uni.showToast({ icon: 'none', title: '不是你的线索哦' })
 				return
 			}
-			// TODO: 跳转 IM 聊天页，目标页待迁移
-			uni.showToast({ icon: 'none', title: '功能开发中' })
+			const dataId = String(this.clueData.userId || '') // 客户用户ID
+			if (!dataId) {
+				uni.showToast({ icon: 'none', title: '用户信息异常' })
+				return
+			}
+			const name = this.clueData.userName || '' // 客户姓名
+			const logo = this.clueData.userLogo || '' // 客户头像
+			try {
+				await startChat({ chatCategoryId: 20, chatDataId: dataId })
+			} catch (e) {
+				console.warn('同步会话失败:', e)
+			}
+			const key = `20:${dataId}` // 单聊会话标识
+			uni.navigateTo({
+				url: `/im-message/pages/chat/detail?key=${encodeURIComponent(key)}&name=${encodeURIComponent(name)}&logo=${encodeURIComponent(logo)}`
+			})
 		},
-		// ----------- 写跟进
+		// ----------- 写跟进：跳转写跟进页，带上线索id和当前状态回显
 		handleAddRecord() {
 			if (!this.isSelf) {
 				uni.showToast({ icon: 'none', title: '不是你的线索哦' })
 				return
 			}
-			// TODO: 跳转写跟进页，目标页待迁移
-			uni.showToast({ icon: 'none', title: '功能开发中' })
+			uni.navigateTo({
+				url: `/pages-sub/clue/add-follow-record?id=${this.id}&status=${encodeURIComponent(this.clueData.status || '')}`
+			})
 		},
 		// ----------- 打电话
 		handlePhone() {
@@ -487,14 +488,13 @@ export default {
 			}
 			uni.makePhoneCall({ phoneNumber: phone })
 		},
-		// ----------- 转交
+		// ----------- 转交：跳转团队成员选择页（自己的线索或管理员可转）
 		handleTransfer() {
 			if (!this.isSelf && !this.isAdmin) {
 				uni.showToast({ icon: 'none', title: '无权操作' })
 				return
 			}
-			// TODO: 跳转转交页，目标页待迁移
-			uni.showToast({ icon: 'none', title: '功能开发中' })
+			uni.navigateTo({ url: `/pages-sub/clue/clue-transfer?id=${this.id}` })
 		},
 		// ----------- 产品图地址处理
 		getProdImg(logo) {
@@ -610,81 +610,69 @@ $red: #c9543f; // 低饱和赭红
 			}
 		}
 
-		// 头部数据概览：大数字横排 + 发丝竖线
-		.cc-stats {
-			margin-top: 40rpx;
-			display: flex;
-			align-items: center;
-
-			.cc-stat {
-				flex: 1;
-				display: flex;
-				flex-direction: column;
-				align-items: center;
-				gap: 10rpx;
-
-				.ccs-num {
-					font-size: 48rpx;
-					font-weight: 700;
-					color: $ink;
-					line-height: 1;
-					font-variant-numeric: tabular-nums;
-				}
-				.ccs-label {
-					font-size: 21rpx;
-					color: $t3;
-					letter-spacing: 3rpx;
-				}
-			}
-
-			// 数据之间的分隔竖线
-			.cc-stat-divider {
-				width: 1rpx;
-				height: 48rpx;
-				background: $line;
-			}
-		}
 	}
 
-	// ----------- 操作栏：白卡上浮到 sheet 交界
+
+	// ----------- 操作栏：整条白色胶囊，单元格发丝竖线分隔
 	.cc-actions {
 		flex-shrink: 0;
 		display: flex;
 		align-items: center;
-		margin: 0 24rpx;
-		padding: 32rpx 0;
+		margin: 4rpx 36rpx 0;
 		background: $card;
-		border-radius: 20rpx;
-		box-shadow: 0 8rpx 28rpx rgba(25, 28, 34, 0.07);
+		border-radius: 999rpx;
+		box-shadow: 0 6rpx 20rpx rgba(25, 28, 34, 0.06);
 		position: relative;
 		z-index: 2;
 
 		.ca-item {
 			flex: 1;
+			position: relative;
 			display: flex;
-			flex-direction: column;
 			align-items: center;
-			gap: 14rpx;
+			justify-content: center;
+			gap: 10rpx;
+			padding: 26rpx 0;
+			transition: opacity 0.15s ease;
+
+			// 单元格之间的发丝竖线（第一个不要）
+			& + .ca-item::before {
+				content: '';
+				position: absolute;
+				left: 0;
+				top: 50%;
+				transform: translateY(-50%);
+				width: 1rpx;
+				height: 36rpx;
+				background: $line;
+			}
+
+			&:active {
+				opacity: 0.55;
+			}
 
 			&.disabled {
 				opacity: 0.3;
 			}
 
-			// 操作图标：浅灰圆 + 发丝边，克制统一
-			.ca-icon {
-				width: 84rpx;
-				height: 84rpx;
+			// 单字圆形图标：浅蓝底 + 蓝字，统一克制
+			.ca-chip {
+				width: 44rpx;
+				height: 44rpx;
 				border-radius: 50%;
-				background: #f4f6fa;
-				border: 1rpx solid $line;
+				background: $blue-soft;
+				color: $blue;
+				font-size: 22rpx;
+				font-weight: 600;
 				display: flex;
 				align-items: center;
 				justify-content: center;
-				font-size: 34rpx;
+				line-height: 1;
 			}
 			.ca-text {
-				font-size: 22rpx;
-				color: $t2;
+				font-size: 24rpx;
+				font-weight: 500;
+				color: $ink;
 				letter-spacing: 1rpx;
 			}
 		}
@@ -695,7 +683,7 @@ $red: #c9543f; // 低饱和赭红
 		flex-shrink: 0;
 		display: flex;
 		padding: 0 36rpx;
-		margin-top: 12rpx;
+		margin-top: 24rpx;
 		border-bottom: 1rpx solid $line;
 
 		.tab {
@@ -876,14 +864,12 @@ $red: #c9543f; // 低饱和赭红
 		}
 	}
 
-	// 放弃按钮：纯文字赭红，弱化但醒目
-	.trend-abandon {
-		margin: 16rpx 36rpx 56rpx;
-		text-align: center;
-		padding: 24rpx 0;
-		font-size: 25rpx;
-		letter-spacing: 2rpx;
-		color: $red;
+	// 放弃按钮：鲜红底白字，固定在底部（复用 rob-bar / rob-btn 结构，只覆盖颜色）
+	// 注意：.rob-btn 嵌套在 .rob-bar 里，编译后是 .rob-bar .rob-btn 且位置靠后，
+	// 所以这里要用 .rob-bar .rob-btn.rob-abandon 三级选择器才能盖过蓝色
+	.rob-bar .rob-btn.rob-abandon {
+		background: #f53f3f;
+		box-shadow: 0 10rpx 24rpx rgba(245, 63, 63, 0.32);
 	}
 
 	// ----------- 跟进记录
@@ -921,46 +907,75 @@ $red: #c9543f; // 低饱和赭红
 				}
 			}
 
-			// 右侧内容做成白卡片，更像"记录单"
+			// 右侧内容：精致的"记录单"卡片
 			.record-right {
 				flex: 1;
 				min-width: 0;
 				margin-bottom: 24rpx;
-				padding: 24rpx;
+				padding: 24rpx 28rpx;
 				background: $card;
-				border-radius: 16rpx;
-				box-shadow: 0 4rpx 20rpx rgba(25, 28, 34, 0.04);
+				border-radius: 18rpx;
+				border: 1rpx solid $line;
+				box-shadow: 0 6rpx 20rpx rgba(25, 28, 34, 0.05);
 
-				.record-row {
+				// 卡头：状态徽章胶囊
+				.record-head {
 					display: flex;
+					align-items: center;
 
-					& + .record-row {
-						margin-top: 10rpx;
-					}
-
-					.record-label {
-						flex-shrink: 0;
-						width: 104rpx;
-						font-size: 23rpx;
-						color: $t3;
-						text-align: right;
-						margin-right: 16rpx;
-						line-height: 1.5;
-					}
-					.record-desc {
-						flex: 1;
-						font-size: 23rpx;
-						color: $ink;
-						line-height: 1.5;
+					.record-status {
+						padding: 6rpx 20rpx;
+						border-radius: 999rpx;
+						background: $blue-soft;
+						font-size: 22rpx;
+						font-weight: 600;
+						color: $blue;
+						letter-spacing: 1rpx;
 					}
 				}
 
-				// 转交/放弃记录高亮：左侧赭红标线
+				// 卡身：小标签 + 内容正文
+				.record-body {
+					margin-top: 18rpx;
+
+					.record-body-label {
+						display: block;
+						font-size: 21rpx;
+						color: $t3;
+						letter-spacing: 2rpx;
+					}
+					.record-body-content {
+						display: block;
+						margin-top: 8rpx;
+						font-size: 27rpx;
+						color: $ink;
+						line-height: 1.6;
+						word-break: break-all;
+					}
+				}
+
+				// 卡脚：跟进人，发丝线隔开
+				.record-foot {
+					margin-top: 18rpx;
+					padding-top: 16rpx;
+					border-top: 1rpx solid $line;
+
+					.record-foot-text {
+						font-size: 22rpx;
+						color: $t2;
+						letter-spacing: 1rpx;
+					}
+				}
+
+				// 转交/放弃记录高亮：赭红徽章 + 左侧标线
 				&.is-notice {
 					border-left: 4rpx solid $red;
 
-					.record-label,
-					.record-desc {
+					.record-head .record-status {
+						background: #faecea;
+						color: $red;
+					}
+					.record-body .record-body-content {
 						color: $red;
 					}
 				}
@@ -1054,7 +1069,7 @@ $red: #c9543f; // 低饱和赭红
 			.info-prod-company {
 				flex-shrink: 0;
 				font-size: 22rpx;
-				color: $t3;
+				color: #676767;
 				max-width: 240rpx;
 				overflow: hidden;
 				white-space: nowrap;

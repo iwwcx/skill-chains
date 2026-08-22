@@ -81,6 +81,22 @@ export const throwHighSeas = (data) => request({
 	apiKey: 'accapi'
 });
 
+// ----------- 新增线索跟进记录（写跟进）
+export const addFollowRecord = (data) => request({
+	url: '/clue/addFollowRecord',
+	method: 'POST',
+	data,
+	apiKey: 'accapi'
+});
+
+// ----------- 转交线索（转给团队其他成员）
+export const transferClue = (data) => request({
+	url: '/clue/transferClue',
+	method: 'POST',
+	data,
+	apiKey: 'accapi'
+});
+
 // ----------- 团队列表（对应 skill-chain 的 teamGetTeamList，type: 1=已抢客户 2=已成交客户）
 export const getTeamList = (params) => request({
 	url: '/stafflist/getStafflistList',
